@@ -1,461 +1,464 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from './services/supabaseClient'
-import PremiumBadge from './components/PremiumBadge'
 
+/* ---------------------------------------------------------------------------
+ * Icons
+ * ------------------------------------------------------------------------- */
+const Icon = ({ name, className = 'w-4 h-4' }) => {
+  const common = {
+    className,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  }
+  switch (name) {
+    case 'message':
+      return <svg {...common}><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+    case 'send':
+      return <svg {...common}><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+    case 'reply':
+      return <svg {...common}><path d="M9 17l-5-5 5-5M4 12h12a4 4 0 0 1 4 4v4"/></svg>
+    case 'chevron-down':
+      return <svg {...common}><path d="M6 9l6 6 6-6"/></svg>
+    case 'chevron-up':
+      return <svg {...common}><path d="M18 15l-6-6-6 6"/></svg>
+    case 'dot':
+      return <svg {...common} fill="currentColor" stroke="none"><circle cx="12" cy="12" r="2"/></svg>
+    case 'sparkles':
+      return <svg {...common}><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg>
+    case 'user':
+      return <svg {...common}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+    default:
+      return null
+  }
+}
+
+function timeAgo(iso) {
+  if (!iso) return ''
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000
+  if (diff < 60) return 'baru saja'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}j`
+  if (diff < 2592000) return `${Math.floor(diff / 86400)}h`
+  return `${Math.floor(diff / 2592000)}bl`
+}
+
+/* ---------------------------------------------------------------------------
+ * CommentItem
+ * ------------------------------------------------------------------------- */
 function CommentItem({ comment, currentUser, onReplySubmit, level = 0, allReplies = [] }) {
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [replyContent, setReplyContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [showReplies, setShowReplies] = useState(false)
 
-  const maxLevel = 3 // Maximum nesting level
-  
-  // Get replies for this comment from allReplies prop (database as source of truth)
-  const commentReplies = allReplies.filter(reply => reply.parent_comment_id === comment.id)
+  const maxLevel = 3
+  const commentReplies = allReplies.filter((r) => r.parent_comment_id === comment.id)
   const hasReplies = commentReplies.length > 0
 
-  // Auto-expand replies if they exist (for persistence after refresh)
   useEffect(() => {
-    if (hasReplies && !showReplies) {
-      setShowReplies(true)
-    }
+    if (hasReplies && !showReplies) setShowReplies(true)
   }, [hasReplies])
 
   async function handleSubmitReply(e) {
     e.preventDefault()
-
-    if (!currentUser) {
-      alert('Silakan login terlebih dahulu')
-      return
-    }
-
-    if (!replyContent.trim()) {
-      alert('Balasan tidak boleh kosong')
-      return
-    }
+    if (!currentUser) return
+    if (!replyContent.trim()) return
 
     setSubmitting(true)
-
-    console.log('💬 [Comments] Submitting reply...')
-    console.log('💬 [Comments] User ID:', currentUser.id)
-    console.log('💬 [Comments] Post ID:', comment.post_id)
-    console.log('💬 [Comments] Parent Comment ID:', comment.id)
-    console.log('💬 [Comments] Reply content length:', replyContent.trim().length)
-
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('comments')
-      .insert([{
-        user_id: currentUser.id,
-        post_id: comment.post_id,
-        content: replyContent.trim(),
-        parent_comment_id: comment.id
-      }])
+      .insert([
+        {
+          user_id: currentUser.id,
+          post_id: comment.post_id,
+          content: replyContent.trim(),
+          parent_comment_id: comment.id,
+        },
+      ])
       .select('*, profiles(username, name, avatar_url, is_premium)')
 
-    console.log('💬 [Comments] Reply insert result:', { data, error })
-
-    if (error) {
-      console.error('❌ [Comments] Error inserting reply:', error)
-      alert('Error: ' + error.message)
-    } else {
-      console.log('✅ [Comments] Reply inserted successfully')
-      console.log('✅ [Comments] Inserted reply records:', data?.length || 0)
+    if (!error) {
       setReplyContent('')
       setShowReplyForm(false)
       setShowReplies(true)
-      // Trigger parent refresh to fetch all comments from database
-      console.log('🔄 [Comments] Triggering parent refresh...')
       if (onReplySubmit) onReplySubmit()
     }
-
     setSubmitting(false)
   }
 
-  // Calculate indentation with thread indicator
-  const hasThreadLine = level > 0
-  const indentClass = level > 0 ? 'ml-6 md:ml-10' : ''
+  const profile = comment.profiles
+  const initial = profile?.name?.charAt(0).toUpperCase() || '?'
+  const indentClass = level > 0 ? 'pl-6 sm:pl-9 border-l-2 border-[#F3F4F6]' : ''
 
   return (
     <div className={`relative ${indentClass}`}>
-      {/* Thread Line Indicator */}
-      {hasThreadLine && (
-        <div className="absolute left-[-12px] md:left-[-20px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-purple-200 to-transparent"></div>
-      )}
-
-      {/* Comment Card */}
-      <div className="group relative bg-white border border-slate-200 rounded-2xl p-4 hover:border-purple-300 hover:shadow-md transition-all duration-300">
-        {/* Comment Header */}
-        <div className="flex items-start gap-3">
-          {/* Avatar */}
-          <Link 
-            to={comment.profiles?.username ? `/u/${comment.profiles.username}` : '#'}
-            className="no-underline flex-shrink-0"
-          >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-400 flex items-center justify-center text-white text-sm font-bold ring-2 ring-white shadow-md hover:scale-110 transition-transform duration-300 overflow-hidden">
-              {comment.profiles?.avatar_url ? (
-                <img 
-                  src={comment.profiles.avatar_url} 
-                  alt={comment.profiles.name} 
-                  className="w-full h-full object-cover" 
+      <div className="flex items-start gap-3">
+        {/* Avatar */}
+        <Link
+          to={profile?.username ? `/u/${profile.username}` : '#'}
+          className="shrink-0"
+        >
+          <div className="relative">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-semibold overflow-hidden ring-2 ring-white shadow-sm">
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.name}
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                comment.profiles?.name?.charAt(0).toUpperCase() || '?'
+                initial
               )}
             </div>
-          </Link>
+            {profile?.is_premium && (
+              <span
+                title="Skillio+"
+                className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#3B82F6] text-white flex items-center justify-center ring-2 ring-white"
+              >
+                <Icon name="sparkles" className="w-2 h-2" />
+              </span>
+            )}
+          </div>
+        </Link>
 
-          {/* Comment Content */}
-          <div className="flex-1 min-w-0">
-            {/* User Info & Time */}
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              {comment.profiles?.username ? (
-                <Link 
-                  to={`/u/${comment.profiles.username}`}
-                  className="no-underline"
+        <div className="min-w-0 flex-1">
+          {/* Bubble */}
+          <div className="bg-[#FAFAFA] border border-[#E5E7EB] rounded-2xl rounded-tl-sm px-4 py-3">
+            <div className="flex items-center gap-1.5 flex-wrap mb-1">
+              {profile?.username ? (
+                <Link
+                  to={`/u/${profile.username}`}
+                  className="inline-flex items-center gap-1 text-sm font-semibold text-[#111827] hover:text-[#3B82F6] transition-colors"
                 >
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-slate-900 hover:text-purple-600 transition-colors text-sm">
-                      {comment.profiles.name}
-                    </span>
-                    {comment.profiles.is_premium && (
-                      <PremiumBadge size="tiny" />
-                    )}
-                  </div>
+                  {profile.name}
                 </Link>
               ) : (
-                <span className="font-bold text-slate-900 text-sm">Anonymous</span>
+                <span className="text-sm font-semibold text-[#111827]">Anonymous</span>
               )}
-              
-              <span className="text-slate-400 text-xs">•</span>
-              
-              <span className="text-slate-500 text-xs">
-                {new Date(comment.created_at).toLocaleDateString('id-ID', {
-                  day: 'numeric',
-                  month: 'short',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
+              {profile?.is_premium && (
+                <span
+                  title="Skillio+"
+                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-[#3B82F6]/10 text-[#3B82F6] text-[10px] font-semibold"
+                >
+                  <Icon name="sparkles" className="w-2.5 h-2.5" />
+                  Skillio+
+                </span>
+              )}
+              {profile?.username && (
+                <span className="text-xs text-[#6B7280]">@{profile.username}</span>
+              )}
+              <Icon name="dot" className="w-2 h-2 text-[#9CA3AF]" />
+              <span className="text-xs text-[#6B7280]">
+                {timeAgo(comment.created_at)}
               </span>
             </div>
-            
-            {/* Comment Text */}
-            <p className="text-slate-700 leading-relaxed text-[15px] mb-3 whitespace-pre-wrap">
+
+            <p className="text-[14px] text-[#111827] leading-relaxed whitespace-pre-wrap">
               {comment.content}
             </p>
+          </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-4">
-              {/* Reply Button */}
-              {currentUser && level < maxLevel && (
-                <button
-                  onClick={() => setShowReplyForm(!showReplyForm)}
-                  className="group/btn flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-purple-600 transition-colors"
-                >
-                  <span className="group-hover/btn:scale-110 transition-transform">💬</span>
-                  <span>{showReplyForm ? 'Batal' : 'Balas'}</span>
-                </button>
-              )}
-              
-              {/* View Replies Button */}
-              {hasReplies && (
-                <button
-                  onClick={() => setShowReplies(!showReplies)}
-                  className="group/btn flex items-center gap-1.5 text-xs font-semibold text-purple-600 hover:text-purple-700 transition-colors"
-                >
-                  <span className="group-hover/btn:scale-110 transition-transform">
-                    {showReplies ? '▼' : '▶'}
-                  </span>
-                  <span>
-                    {showReplies ? 'Sembunyikan' : 'Lihat'} {commentReplies.length} balasan
-                  </span>
-                </button>
-              )}
+          {/* Actions */}
+          <div className="flex items-center gap-3 mt-2 ml-1">
+            {currentUser && level < maxLevel && (
+              <button
+                onClick={() => setShowReplyForm((v) => !v)}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6B7280] hover:text-[#3B82F6] transition-colors"
+              >
+                <Icon name="reply" className="w-3.5 h-3.5" />
+                {showReplyForm ? 'Batal' : 'Balas'}
+              </button>
+            )}
+            {hasReplies && (
+              <button
+                onClick={() => setShowReplies((v) => !v)}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+              >
+                <Icon
+                  name={showReplies ? 'chevron-up' : 'chevron-down'}
+                  className="w-3.5 h-3.5"
+                />
+                {showReplies ? 'Sembunyikan' : 'Lihat'} {commentReplies.length} balasan
+              </button>
+            )}
+          </div>
+
+          {/* Reply form */}
+          <AnimatePresence>
+            {showReplyForm && (
+              <motion.form
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                onSubmit={handleSubmitReply}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 bg-white border border-[#E5E7EB] rounded-2xl p-3">
+                  <textarea
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    placeholder="Tulis balasan kamu..."
+                    rows={3}
+                    className="w-full px-3 py-2 text-sm bg-white outline-none placeholder:text-[#9CA3AF] resize-none"
+                    autoFocus
+                  />
+                  <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-[#F3F4F6]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowReplyForm(false)
+                        setReplyContent('')
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#111827] hover:bg-[#F3F4F6] transition-colors"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submitting || !replyContent.trim()}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        submitting || !replyContent.trim()
+                          ? 'bg-[#9CA3AF] text-white cursor-not-allowed'
+                          : 'bg-[#3B82F6] hover:bg-[#2563EB] text-white shadow-sm shadow-blue-500/20'
+                      }`}
+                    >
+                      {submitting ? (
+                        <>
+                          <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Mengirim
+                        </>
+                      ) : (
+                        <>
+                          <Icon name="send" className="w-3.5 h-3.5" />
+                          Kirim balasan
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
+
+          {/* Nested replies */}
+          {showReplies && hasReplies && (
+            <div className="mt-4 space-y-4">
+              {commentReplies.map((reply) => (
+                <CommentItem
+                  key={reply.id}
+                  comment={reply}
+                  currentUser={currentUser}
+                  onReplySubmit={onReplySubmit}
+                  level={level + 1}
+                  allReplies={allReplies}
+                />
+              ))}
             </div>
-          </div>
+          )}
         </div>
-
-        {/* Reply Form */}
-        {showReplyForm && (
-          <div className="mt-4 ml-0 md:ml-13 animate-[slideDown_0.3s_ease-out]">
-            <form onSubmit={handleSubmitReply} className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-              <textarea
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                placeholder="Tulis balasan Anda..."
-                rows="3"
-                className="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white outline-none transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-[inherit] resize-none"
-                autoFocus
-              />
-              <div className="flex gap-2 mt-2">
-                <button
-                  type="submit"
-                  disabled={submitting || !replyContent.trim()}
-                  className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                    submitting || !replyContent.trim()
-                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:shadow-lg hover:-translate-y-0.5'
-                  }`}
-                >
-                  {submitting ? 'Mengirim...' : 'Kirim Balasan'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowReplyForm(false)
-                    setReplyContent('')
-                  }}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
       </div>
-
-      {/* Nested Replies */}
-      {showReplies && hasReplies && (
-        <div className="mt-3 space-y-3 animate-[slideDown_0.3s_ease-out]">
-          {commentReplies.map((reply) => (
-            <CommentItem
-              key={reply.id}
-              comment={reply}
-              currentUser={currentUser}
-              onReplySubmit={onReplySubmit}
-              level={level + 1}
-              allReplies={allReplies}
-            />
-          ))}
-        </div>
-      )}
     </div>
   )
 }
 
+/* ---------------------------------------------------------------------------
+ * Comments root
+ * ------------------------------------------------------------------------- */
 function Comments({ postId }) {
-  const [allComments, setAllComments] = useState([]) // All comments including replies
-  const [mainComments, setMainComments] = useState([]) // Only top-level comments
+  const [allComments, setAllComments] = useState([])
+  const [mainComments, setMainComments] = useState([])
   const [newComment, setNewComment] = useState('')
   const [currentUser, setCurrentUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    getCurrentUser()
+    init()
     fetchAllComments()
   }, [postId])
 
-  async function getCurrentUser() {
+  async function init() {
     const { data: { user } } = await supabase.auth.getUser()
     setCurrentUser(user)
+    if (user) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, username, name, avatar_url')
+        .eq('id', user.id)
+        .maybeSingle()
+      setProfile(data || null)
+    }
   }
 
   async function fetchAllComments() {
-    console.log('🔄 [Comments] Fetching all comments for post:', postId)
-    
-    // Fetch ALL comments (both main and replies) in one query
-    // This is the key to persistence - we fetch everything from database
     const { data, error } = await supabase
       .from('comments')
       .select('*, profiles(username, name, avatar_url, is_premium)')
       .eq('post_id', postId)
       .order('created_at', { ascending: true })
 
-    if (error) {
-      console.error('❌ [Comments] Error fetching comments:', error)
-      setLoading(false)
-      return
+    if (!error) {
+      setAllComments(data || [])
+      setMainComments((data || []).filter((c) => c.parent_comment_id === null))
     }
-
-    console.log('✅ [Comments] Fetched comments:', data?.length)
-    
-    // Store all comments
-    setAllComments(data || [])
-    
-    // Filter main comments (parent_comment_id is null)
-    const mainOnly = (data || []).filter(comment => comment.parent_comment_id === null)
-    setMainComments(mainOnly)
-    
-    console.log('📊 [Comments] Main comments:', mainOnly.length)
-    console.log('📊 [Comments] Total comments (including replies):', data?.length)
-    
     setLoading(false)
   }
 
   async function handleSubmitComment(e) {
     e.preventDefault()
-
-    if (!currentUser) {
-      alert('Silakan login terlebih dahulu untuk berkomentar')
-      return
-    }
-
-    if (!newComment.trim()) {
-      alert('Komentar tidak boleh kosong')
-      return
-    }
+    if (!currentUser) return
+    if (!newComment.trim()) return
 
     setSubmitting(true)
-
-    console.log('💬 [Comments] Submitting new comment...')
-    console.log('💬 [Comments] User ID:', currentUser.id)
-    console.log('💬 [Comments] Post ID:', postId)
-    console.log('💬 [Comments] Content length:', newComment.trim().length)
-
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('comments')
-      .insert([{
-        user_id: currentUser.id,
-        post_id: postId,
-        content: newComment.trim(),
-        parent_comment_id: null
-      }])
+      .insert([
+        {
+          user_id: currentUser.id,
+          post_id: postId,
+          content: newComment.trim(),
+          parent_comment_id: null,
+        },
+      ])
       .select('*, profiles(username, name, avatar_url, is_premium)')
 
-    console.log('💬 [Comments] Insert result:', { data, error })
-
-    if (error) {
-      console.error('❌ [Comments] Error inserting comment:', error)
-      alert('Error: ' + error.message)
-    } else {
-      console.log('✅ [Comments] Comment inserted successfully')
-      console.log('✅ [Comments] Inserted records:', data?.length || 0)
+    if (!error) {
       setNewComment('')
-      // Refresh all comments from database to get the latest state
-      console.log('🔄 [Comments] Refreshing comments...')
       await fetchAllComments()
-      console.log('✅ [Comments] Comments refreshed')
     }
-
     setSubmitting(false)
   }
 
   const totalCount = allComments.length
+  const myInitial = (profile?.name || currentUser?.email || 'U').charAt(0).toUpperCase()
 
   return (
-    <div className="bg-gradient-to-br from-white to-slate-50/50 border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+    <div
+      data-comments-anchor
+      className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden"
+    >
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-6 md:px-8 py-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-400 flex items-center justify-center text-white shadow-lg">
-              <span className="text-xl">💬</span>
-            </div>
-            <div>
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900 m-0">
-                Diskusi
-              </h2>
-              <p className="text-sm text-slate-500 m-0">
-                {totalCount} {totalCount === 1 ? 'komentar' : 'komentar'}
-              </p>
-            </div>
+      <div className="px-5 sm:px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6]">
+            <Icon name="message" className="w-4 h-4" />
+          </span>
+          <div>
+            <h2 className="text-base font-semibold text-[#111827]">Diskusi</h2>
+            <p className="text-xs text-[#6B7280]">
+              {totalCount} {totalCount === 1 ? 'komentar' : 'komentar'}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="px-6 md:px-8 py-6">
-        {/* Form Tambah Komentar */}
+      <div className="px-5 sm:px-6 py-6">
+        {/* Compose */}
         {currentUser ? (
-          <div className="mb-8">
-            <form onSubmit={handleSubmitComment}>
-              <div className="flex gap-3">
-                {/* Avatar */}
-                <Link 
-                  to={currentUser.user_metadata?.username ? `/u/${currentUser.user_metadata.username}` : '#'}
-                  className="no-underline flex-shrink-0"
-                >
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-purple-500 to-purple-400 flex items-center justify-center text-white text-sm font-bold ring-2 ring-white shadow-md hover:scale-110 transition-transform duration-300 overflow-hidden">
-                    {currentUser.user_metadata?.avatar_url ? (
-                      <img 
-                        src={currentUser.user_metadata.avatar_url} 
-                        alt="You" 
-                        className="w-full h-full object-cover" 
-                      />
-                    ) : (
-                      '👤'
-                    )}
-                  </div>
-                </Link>
-                
-                {/* Input */}
-                <div className="flex-1">
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Bagikan insight atau pengalaman Anda..."
-                    rows="4"
-                    className="w-full px-4 py-3 text-[15px] rounded-2xl border-2 border-slate-200 bg-white outline-none transition-all focus:border-purple-400 focus:ring-4 focus:ring-purple-400/10 font-[inherit] resize-none shadow-sm"
+          <form onSubmit={handleSubmitComment} className="mb-8">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-semibold overflow-hidden ring-2 ring-white shadow-sm">
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt="You"
+                    className="w-full h-full object-cover"
                   />
-                  <div className="flex items-center justify-between mt-3">
-                    <p className="text-xs text-slate-500 m-0">
-                      Gunakan bahasa yang sopan dan konstruktif
-                    </p>
-                    <button
-                      type="submit"
-                      disabled={submitting || !newComment.trim()}
-                      className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all ${
-                        submitting || !newComment.trim()
-                          ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:-translate-y-0.5 hover:shadow-lg shadow-purple-500/30'
-                      }`}
-                    >
-                      {submitting ? (
-                        <span className="flex items-center gap-2">
-                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                          Mengirim...
-                        </span>
-                      ) : (
-                        'Kirim Komentar'
-                      )}
-                    </button>
-                  </div>
+                ) : (
+                  myInitial
+                )}
+              </div>
+              <div className="flex-1">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Bagikan insight atau respon kamu..."
+                  rows={3}
+                  className="w-full px-4 py-3 text-sm bg-white border border-[#E5E7EB] rounded-2xl outline-none placeholder:text-[#9CA3AF] focus:border-[#3B82F6] focus:ring-4 focus:ring-blue-500/10 transition-all resize-none"
+                />
+                <div className="flex items-center justify-between mt-2 gap-2 flex-wrap">
+                  <p className="text-xs text-[#6B7280]">
+                    Jaga diskusi tetap konstruktif dan sopan.
+                  </p>
+                  <button
+                    type="submit"
+                    disabled={submitting || !newComment.trim()}
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      submitting || !newComment.trim()
+                        ? 'bg-[#9CA3AF] text-white cursor-not-allowed'
+                        : 'bg-[#3B82F6] hover:bg-[#2563EB] text-white shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/25'
+                    }`}
+                  >
+                    {submitting ? (
+                      <>
+                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Mengirim
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="send" className="w-4 h-4" />
+                        Kirim komentar
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
-            </form>
-          </div>
-        ) : (
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-2 border-purple-200 rounded-2xl p-8 mb-8 text-center">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg">
-              💬
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
-              Bergabunglah dalam Diskusi
+          </form>
+        ) : (
+          <div className="mb-8 bg-[#FAFAFA] border border-[#E5E7EB] rounded-2xl p-6 text-center">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#3B82F6]/10 text-[#3B82F6] mb-3">
+              <Icon name="user" className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-semibold text-[#111827] mb-1">
+              Login untuk berdiskusi
             </h3>
-            <p className="text-slate-600 mb-5 text-sm">
-              Login untuk berbagi insight dan berinteraksi dengan komunitas kreator
+            <p className="text-xs text-[#6B7280] mb-4 max-w-sm mx-auto">
+              Bergabung untuk berbagi respon dan terhubung dengan creator lain.
             </p>
             <Link to="/login">
-              <button className="bg-gradient-to-r from-purple-600 to-purple-500 text-white px-8 py-3 text-sm rounded-xl font-semibold hover:-translate-y-0.5 hover:shadow-xl shadow-purple-500/30 transition-all">
-                Login untuk Berkomentar
+              <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] shadow-sm shadow-blue-500/20 transition-colors">
+                Login
               </button>
             </Link>
           </div>
         )}
 
-        {/* Daftar Komentar */}
+        {/* Comments list */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-12 h-12 border-4 border-slate-200 border-t-purple-600 rounded-full animate-spin"></div>
-              <p className="text-sm text-slate-600 font-medium">Memuat diskusi...</p>
-            </div>
+          <div className="space-y-4">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="flex gap-3 animate-pulse">
+                <div className="w-9 h-9 rounded-full bg-[#F3F4F6] shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-32 bg-[#F3F4F6] rounded" />
+                  <div className="h-16 bg-[#F3F4F6] rounded-2xl" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : mainComments.length === 0 ? (
-          <div className="text-center py-16 px-4 bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-2xl border-2 border-dashed border-slate-300">
-            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-5xl mx-auto mb-5 shadow-lg">
-              💭
+          <div className="text-center py-10 bg-[#FAFAFA] rounded-2xl border border-dashed border-[#E5E7EB]">
+            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[#3B82F6]/10 text-[#3B82F6] mb-3">
+              <Icon name="message" className="w-5 h-5" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">
-              Belum Ada Diskusi
+            <h3 className="text-sm font-semibold text-[#111827] mb-1">
+              Belum ada diskusi
             </h3>
-            <p className="text-slate-600 text-base max-w-md mx-auto">
-              Jadilah yang pertama berbagi insight dan memulai percakapan!
+            <p className="text-xs text-[#6B7280] max-w-xs mx-auto">
+              Jadilah yang pertama membuka diskusi tentang insight ini.
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {mainComments.map((comment) => (
               <CommentItem
                 key={comment.id}

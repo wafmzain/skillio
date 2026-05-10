@@ -1,373 +1,358 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { usePremium } from './hooks/usePremium'
-import PremiumBadge from './components/PremiumBadge'
+
+/* Shared inline icon set — stroke style */
+const Icon = ({ name, className = 'w-5 h-5' }) => {
+  const common = {
+    className,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  }
+  switch (name) {
+    case 'home':
+      return <svg {...common}><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1v-9.5z"/></svg>
+    case 'compass':
+      return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5L13.5 13.5 8.5 15.5 10.5 10.5 15.5 8.5z"/></svg>
+    case 'trending':
+      return <svg {...common}><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+    case 'bookmark':
+      return <svg {...common}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    case 'sparkles':
+      return <svg {...common}><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg>
+    case 'bell':
+      return <svg {...common}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    case 'plus':
+      return <svg {...common}><path d="M12 5v14M5 12h14"/></svg>
+    case 'chevron-down':
+      return <svg {...common}><path d="M6 9l6 6 6-6"/></svg>
+    case 'user':
+      return <svg {...common}><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+    case 'settings':
+      return <svg {...common}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    case 'logout':
+      return <svg {...common}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+    case 'search':
+      return <svg {...common}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    default:
+      return null
+  }
+}
 
 function DashboardNavbar({ user, onLogout }) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isNotifOpen, setIsNotifOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const dropdownRef = useRef(null)
-  const notificationRef = useRef(null)
+  const profileRef = useRef(null)
+  const notifRef = useRef(null)
 
-  const { isPremium, loading: premiumLoading } = usePremium(user?.id)
+  const { isPremium } = usePremium(user?.id)
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    const onScroll = () => setIsScrolled(window.scrollY > 12)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsProfileDropdownOpen(false)
-      }
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setIsNotificationOpen(false)
-      }
+    const onClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) setIsProfileOpen(false)
+      if (notifRef.current && !notifRef.current.contains(e.target)) setIsNotifOpen(false)
     }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
   }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [isMobileMenuOpen])
 
   const menuItems = [
-    { name: 'Beranda', path: '/', icon: '🏠' },
-    { name: 'Jelajahi', path: '/home', icon: '🔍' },
-    { name: 'Upload', path: '/upload', icon: '📤' },
-    { name: 'Tersimpan', path: '/saved', icon: '🔖' }
+    { name: 'Beranda', path: '/home', icon: 'home' },
+    { name: 'Jelajahi', path: '/explore', icon: 'compass' },
+    { name: 'Trending', path: '/explore?tab=trending', icon: 'trending' },
+    { name: 'Tersimpan', path: '/saved', icon: 'bookmark' },
+    { name: 'Skillio+', path: '/premium', icon: 'sparkles' },
   ]
 
-  const profileMenuItems = [
-    { name: 'Profil Saya', path: '/profile', icon: '👤' },
-    { name: 'Post Saya', path: '/profile', icon: '📚' },
-    { name: 'Premium', path: '/premium', icon: '⭐' },
-    { name: 'Pengaturan', path: '/settings', icon: '⚙️' }
+  const profileMenu = [
+    { name: 'Profil Saya', path: '/profile', icon: 'user' },
+    { name: 'Skillio+', path: '/premium', icon: 'sparkles' },
+    { name: 'Pengaturan', path: '/settings', icon: 'settings' },
   ]
 
   const notifications = [
-    { id: 1, text: 'Komentar baru di post Anda', time: '5m lalu', unread: true },
-    { id: 2, text: 'Seseorang menyimpan insight Anda', time: '1j lalu', unread: true },
-    { id: 3, text: 'Selamat datang di Skillio!', time: '2j lalu', unread: false }
+    { id: 1, text: 'Komentar baru di insight kamu', time: '5m', unread: true },
+    { id: 2, text: 'Seseorang menyimpan insight kamu', time: '1j', unread: true },
+    { id: 3, text: 'Selamat datang di Skillio', time: '2j', unread: false },
   ]
 
-  const handleLogoutClick = () => {
-    setIsProfileDropdownOpen(false)
+  const handleLogout = () => {
+    setIsProfileOpen(false)
     onLogout()
     navigate('/')
   }
 
-  const isActive = (path) => location.pathname === path
+  const getInitial = () => (user?.email ? user.email.charAt(0).toUpperCase() : 'U')
+  const username = user?.email?.split('@')[0] || 'User'
 
-  // Get user initials for avatar
-  const getUserInitials = () => {
-    if (!user?.email) return 'U'
-    return user.email.charAt(0).toUpperCase()
+  const isActive = (path) => {
+    const clean = path.split('?')[0]
+    return location.pathname === clean
   }
 
   return (
     <>
-      {/* Floating Navbar Container */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled ? 'pt-3' : 'pt-6'
-      }`}>
-        <div className="max-w-[1400px] mx-auto px-6">
-          {/* Glassmorphism Capsule Navbar */}
-          <div className={`relative backdrop-blur-xl bg-white/90 border border-slate-200/60 rounded-full shadow-lg transition-all duration-500 ${
-            isScrolled ? 'shadow-xl shadow-slate-900/10 py-3' : 'shadow-slate-900/5 py-4'
-          }`}>
-            {/* Subtle Glow Effect */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            <div className={`relative flex items-center justify-between px-8 transition-all duration-500`}>
-              {/* Left - Logo */}
-              <Link to="/" className="flex items-center group z-10">
-                <img 
-                  src="/logo.png" 
-                  alt="Skillio" 
-                  className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </Link>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4'}`}>
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
+          <div
+            className={`relative flex items-center justify-between gap-4 rounded-2xl border border-[#E5E7EB] bg-white/80 backdrop-blur-xl px-4 sm:px-5 transition-all duration-300 ${
+              isScrolled
+                ? 'py-2.5 shadow-[0_4px_20px_-4px_rgba(17,24,39,0.08)]'
+                : 'py-3 shadow-[0_2px_12px_-4px_rgba(17,24,39,0.04)]'
+            }`}
+          >
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 shrink-0">
+              <img src="/logo.png" alt="Skillio" className="h-8 w-auto object-contain" />
+            </Link>
 
-              {/* Center - Navigation Menu (Desktop) */}
-              <div className="hidden lg:flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-                {menuItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className={`group relative px-5 py-2.5 rounded-full font-semibold text-[15px] transition-all duration-300 ${
-                      isActive(item.path)
-                        ? 'text-slate-900 bg-slate-100'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="text-base opacity-80 group-hover:scale-110 transition-transform">
-                        {item.icon}
-                      </span>
-                      {item.name}
-                    </span>
-                    
-                    {/* Active Indicator */}
-                    {isActive(item.path) && (
-                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-purple-600 to-purple-500 rounded-full"></span>
-                    )}
-                    
-                    {/* Hover Glow */}
-                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600/0 via-purple-600/5 to-purple-600/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                  </Link>
-                ))}
-              </div>
-
-              {/* Right - Actions */}
-              <div className="hidden lg:flex items-center gap-3 z-10">
-                {/* Premium Button */}
-                {!premiumLoading && (
-                  isPremium ? (
-                    <Link to="/premium" className="no-underline">
-                      <div className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-lg hover:scale-105 transition-all">
-                        <PremiumBadge size="small" />
-                      </div>
-                    </Link>
-                  ) : (
-                    <Link to="/premium" className="no-underline">
-                      <button className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-sm hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2">
-                        <span className="text-base">✦</span>
-                        <span>Upgrade</span>
-                      </button>
-                    </Link>
-                  )
-                )}
-
-                {/* Notification Icon */}
-                <div className="relative" ref={notificationRef}>
-                  <button
-                    onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                    className="relative w-10 h-10 flex items-center justify-center rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-300 group"
-                  >
-                    <span className="text-xl group-hover:scale-110 transition-transform">🔔</span>
-                    {notifications.some(n => n.unread) && (
-                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                    )}
-                  </button>
-
-                  {/* Notification Dropdown */}
-                  {isNotificationOpen && (
-                    <div className="absolute right-0 mt-3 w-80 backdrop-blur-xl bg-white/95 border border-slate-200 rounded-3xl shadow-xl py-3 animate-[fadeIn_0.2s_ease-out]">
-                      <div className="px-5 py-3 border-b border-slate-200">
-                        <h3 className="font-bold text-slate-900 text-sm">Notifikasi</h3>
-                      </div>
-                      <div className="max-h-96 overflow-y-auto">
-                        {notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={`px-5 py-3 hover:bg-slate-50 transition-colors cursor-pointer ${
-                              notification.unread ? 'bg-purple-50/50' : ''
-                            }`}
-                          >
-                            <p className="text-sm text-slate-900 mb-1">{notification.text}</p>
-                            <p className="text-xs text-slate-500">{notification.time}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="px-5 py-3 border-t border-slate-200">
-                        <button className="text-sm text-purple-600 hover:text-purple-700 font-semibold transition-colors">
-                          Lihat semua notifikasi
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Divider */}
-                <div className="w-px h-6 bg-slate-200"></div>
-
-                {/* Profile Dropdown */}
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-slate-100 transition-all duration-300 group"
-                  >
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-600/30 group-hover:scale-110 transition-transform">
-                      {getUserInitials()}
-                    </div>
-                    <div className="text-left hidden xl:block">
-                      <p className="text-sm font-semibold text-slate-900 leading-tight">
-                        {user?.email?.split('@')[0] || 'User'}
-                      </p>
-                      {isPremium ? (
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <PremiumBadge size="tiny" />
-                        </div>
-                      ) : (
-                        <p className="text-xs text-slate-500">Free Plan</p>
-                      )}
-                    </div>
-                    <svg 
-                      className={`w-4 h-4 text-slate-500 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {/* Profile Dropdown Menu */}
-                  {isProfileDropdownOpen && (
-                    <div className="absolute right-0 mt-3 w-64 backdrop-blur-xl bg-white/95 border border-slate-200 rounded-3xl shadow-xl py-3 animate-[fadeIn_0.2s_ease-out]">
-                      {/* User Info */}
-                      <div className="px-5 py-3 border-b border-slate-200">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="font-bold text-slate-900 text-sm">{user?.email?.split('@')[0] || 'User'}</p>
-                          {isPremium && <PremiumBadge size="tiny" />}
-                        </div>
-                        <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-                        {isPremium && (
-                          <div className="mt-2 pt-2 border-t border-slate-100">
-                            <p className="text-xs text-purple-600 font-semibold">✦ Skillio+ Member</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Menu Items */}
-                      <div className="py-2">
-                        {profileMenuItems.map((item) => (
-                          <Link
-                            key={item.name}
-                            to={item.path}
-                            onClick={() => setIsProfileDropdownOpen(false)}
-                            className="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 transition-colors text-slate-600 hover:text-slate-900"
-                          >
-                            <span className="text-lg">{item.icon}</span>
-                            <span className="font-medium text-sm">{item.name}</span>
-                          </Link>
-                        ))}
-                      </div>
-
-                      {/* Logout */}
-                      <div className="border-t border-slate-200 pt-2">
-                        <button
-                          onClick={handleLogoutClick}
-                          className="w-full flex items-center gap-3 px-5 py-2.5 hover:bg-red-50 transition-colors text-red-600 hover:text-red-700"
-                        >
-                          <span className="text-lg">🚪</span>
-                          <span className="font-medium text-sm">Logout</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Mobile Hamburger Button */}
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-full hover:bg-slate-100 transition-all z-10"
-                aria-label="Toggle menu"
-              >
-                <span className={`w-5 h-0.5 bg-slate-900 transition-all duration-300 ${
-                  isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
-                }`}></span>
-                <span className={`w-5 h-0.5 bg-slate-900 transition-all duration-300 ${
-                  isMobileMenuOpen ? 'opacity-0' : ''
-                }`}></span>
-                <span className={`w-5 h-0.5 bg-slate-900 transition-all duration-300 ${
-                  isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
-                }`}></span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      <div 
-        className={`fixed inset-0 z-40 lg:hidden transition-all duration-300 ${
-          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        {/* Backdrop */}
-        <div 
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={() => setIsMobileMenuOpen(false)}
-        ></div>
-
-        {/* Mobile Menu Panel */}
-        <div className={`absolute top-24 left-6 right-6 backdrop-blur-xl bg-white/95 border border-slate-200 rounded-3xl shadow-2xl transition-all duration-300 ${
-          isMobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
-        }`}>
-          <div className="p-6">
-            {/* Mobile User Info */}
-            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-200">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center text-white font-bold shadow-lg shadow-purple-600/30">
-                {getUserInitials()}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="font-bold text-slate-900 text-sm">{user?.email?.split('@')[0] || 'User'}</p>
-                  {isPremium && <PremiumBadge size="tiny" />}
-                </div>
-                <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-                {isPremium && (
-                  <p className="text-xs text-purple-600 font-semibold mt-1">✦ Skillio+ Member</p>
-                )}
-              </div>
-            </div>
-
-            {/* Mobile Menu Items */}
-            <div className="space-y-2 mb-6">
+            {/* Desktop menu */}
+            <div className="hidden lg:flex items-center gap-1">
               {menuItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl font-semibold transition-all ${
+                  className={`relative inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                     isActive(item.path)
-                      ? 'text-slate-900 bg-slate-100'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? 'text-[#3B82F6] bg-[#3B82F6]/10'
+                      : 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F9FAFB]'
                   }`}
                 >
-                  <span className="text-xl">{item.icon}</span>
+                  <Icon name={item.icon} className="w-4 h-4" />
                   {item.name}
                 </Link>
               ))}
             </div>
 
-            {/* Mobile Profile Menu */}
-            <div className="space-y-2 mb-6 pb-6 border-b border-slate-200">
-              {profileMenuItems.map((item) => (
+            {/* Right actions */}
+            <div className="hidden lg:flex items-center gap-2 shrink-0">
+              <Link to="/upload">
+                <button className="group inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/25 transition-all">
+                  <Icon name="plus" className="w-4 h-4" />
+                  Buat Insight
+                </button>
+              </Link>
+
+              {/* Notifications */}
+              <div className="relative" ref={notifRef}>
+                <button
+                  onClick={() => setIsNotifOpen((v) => !v)}
+                  className="relative w-10 h-10 flex items-center justify-center rounded-xl text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors"
+                  aria-label="Notifications"
+                >
+                  <Icon name="bell" className="w-5 h-5" />
+                  {notifications.some((n) => n.unread) && (
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-[#3B82F6] rounded-full ring-2 ring-white" />
+                  )}
+                </button>
+
+                {isNotifOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white border border-[#E5E7EB] rounded-2xl shadow-xl overflow-hidden animate-[fadeIn_0.15s_ease-out]">
+                    <div className="px-4 py-3 border-b border-[#E5E7EB] flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-[#111827]">Notifikasi</h3>
+                      <span className="text-xs text-[#3B82F6] font-medium">
+                        {notifications.filter((n) => n.unread).length} baru
+                      </span>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className={`px-4 py-3 hover:bg-[#F9FAFB] cursor-pointer flex items-start gap-3 border-b border-[#F3F4F6] last:border-b-0 ${
+                            n.unread ? 'bg-blue-50/40' : ''
+                          }`}
+                        >
+                          <div className="w-2 h-2 mt-1.5 rounded-full shrink-0 {n.unread ? 'bg-[#3B82F6]' : 'bg-transparent'}" style={{ background: n.unread ? '#3B82F6' : 'transparent' }} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-[#111827]">{n.text}</p>
+                            <p className="text-xs text-[#6B7280] mt-0.5">{n.time} lalu</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="px-4 py-2.5 border-t border-[#E5E7EB]">
+                      <button className="text-xs font-medium text-[#3B82F6] hover:text-[#2563EB]">
+                        Lihat semua
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="w-px h-6 bg-[#E5E7EB]" />
+
+              {/* Profile */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setIsProfileOpen((v) => !v)}
+                  className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl hover:bg-[#F3F4F6] transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                    {getInitial()}
+                  </div>
+                  <div className="text-left hidden xl:block">
+                    <div className="text-xs font-semibold text-[#111827] leading-tight">{username}</div>
+                    <div className="text-[10px] text-[#6B7280]">{isPremium ? 'Skillio+' : 'Free'}</div>
+                  </div>
+                  <Icon name="chevron-down" className={`w-4 h-4 text-[#6B7280] transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white border border-[#E5E7EB] rounded-2xl shadow-xl overflow-hidden animate-[fadeIn_0.15s_ease-out]">
+                    <div className="px-4 py-3 border-b border-[#E5E7EB]">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                          {getInitial()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-semibold text-[#111827] truncate">{username}</div>
+                          <div className="text-xs text-[#6B7280] truncate">{user?.email}</div>
+                        </div>
+                      </div>
+                      {isPremium && (
+                        <div className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#3B82F6]/10 text-[#3B82F6] text-[11px] font-semibold">
+                          <Icon name="sparkles" className="w-3 h-3" />
+                          Skillio+ Member
+                        </div>
+                      )}
+                    </div>
+                    <div className="py-1.5">
+                      {profileMenu.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.path}
+                          onClick={() => setIsProfileOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#111827] hover:bg-[#F9FAFB] transition-colors"
+                        >
+                          <Icon name={item.icon} className="w-4 h-4 text-[#6B7280]" />
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="border-t border-[#E5E7EB]">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#EF4444] hover:bg-red-50 transition-colors"
+                      >
+                        <Icon name="logout" className="w-4 h-4" />
+                        Keluar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setIsMobileMenuOpen((v) => !v)}
+              className="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-[5px] rounded-xl hover:bg-[#F3F4F6] transition-colors"
+              aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
+            >
+              <span className={`w-[18px] h-[2px] bg-[#111827] rounded transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+              <span className={`w-[18px] h-[2px] bg-[#111827] rounded transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`} />
+              <span className={`w-[18px] h-[2px] bg-[#111827] rounded transition-transform duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile menu */}
+      <div
+        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <div
+          className="absolute inset-0 bg-[#111827]/40 backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+        <div
+          className={`absolute top-[76px] left-4 right-4 bg-white border border-[#E5E7EB] rounded-2xl shadow-xl transition-all duration-300 ${
+            isMobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
+          }`}
+        >
+          <div className="p-3">
+            {/* Profile header */}
+            <div className="flex items-center gap-3 px-3 py-3 mb-2 border-b border-[#E5E7EB]">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                {getInitial()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold text-[#111827] truncate">{username}</div>
+                <div className="text-xs text-[#6B7280] truncate">{user?.email}</div>
+              </div>
+              {isPremium && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-[#3B82F6]/10 text-[#3B82F6] text-[10px] font-semibold">
+                  <Icon name="sparkles" className="w-3 h-3" /> Skillio+
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-1 mb-2">
+              {menuItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all font-semibold"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-medium transition-colors ${
+                    isActive(item.path)
+                      ? 'text-[#3B82F6] bg-[#3B82F6]/10'
+                      : 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F9FAFB]'
+                  }`}
                 >
-                  <span className="text-xl">{item.icon}</span>
-                  <span>{item.name}</span>
+                  <Icon name={item.icon} className="w-4 h-4" />
+                  {item.name}
                 </Link>
               ))}
             </div>
 
-            {/* Mobile Logout */}
-            <button
-              onClick={() => {
-                setIsMobileMenuOpen(false)
-                handleLogoutClick()
-              }}
-              className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-red-600 hover:bg-red-50 transition-all font-semibold"
-            >
-              <span className="text-xl">🚪</span>
-              Logout
-            </button>
+            <div className="space-y-1 pt-2 border-t border-[#E5E7EB]">
+              {profileMenu.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] text-[#6B7280] hover:text-[#111827] hover:bg-[#F9FAFB] transition-colors"
+                >
+                  <Icon name={item.icon} className="w-4 h-4" />
+                  {item.name}
+                </Link>
+              ))}
+              <Link to="/upload" onClick={() => setIsMobileMenuOpen(false)}>
+                <button className="w-full flex items-center justify-center gap-2 mt-2 px-4 py-3 rounded-xl text-sm font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] transition-colors">
+                  <Icon name="plus" className="w-4 h-4" />
+                  Buat Insight
+                </button>
+              </Link>
+              <button
+                onClick={() => { setIsMobileMenuOpen(false); handleLogout() }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] text-[#EF4444] hover:bg-red-50 transition-colors"
+              >
+                <Icon name="logout" className="w-4 h-4" />
+                Keluar
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase } from './services/supabaseClient'
 import DashboardNavbar from './DashboardNavbar'
 import LandingNavbar from './LandingNavbar'
@@ -15,6 +15,21 @@ import Explore from './Explore'
 import Premium from './Premium'
 import Settings from './Settings'
 import ProtectedRoute from './ProtectedRoute'
+
+/**
+ * Routes where the global navbar should be hidden (full-screen flows).
+ */
+const NAVBAR_HIDDEN_PATHS = ['/login', '/register']
+
+function AppNavbar({ user, onLogout }) {
+  const location = useLocation()
+  if (NAVBAR_HIDDEN_PATHS.includes(location.pathname)) return null
+  return user ? (
+    <DashboardNavbar user={user} onLogout={onLogout} />
+  ) : (
+    <LandingNavbar />
+  )
+}
 
 function App() {
   const [user, setUser] = useState(null)
@@ -60,13 +75,8 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Show DashboardNavbar when user is logged in, LandingNavbar when not */}
-      {user ? (
-        <DashboardNavbar user={user} onLogout={handleLogout} />
-      ) : (
-        <LandingNavbar />
-      )}
-      
+      <AppNavbar user={user} onLogout={handleLogout} />
+
       <Routes>
         {/* Landing Page */}
         <Route path="/" element={<LandingPage user={user} />} />
@@ -119,7 +129,7 @@ function App() {
           path="/upload" 
           element={
             <ProtectedRoute user={user}>
-              <div className="pt-28 py-8 px-5 max-w-3xl mx-auto">
+              <div className="pt-28">
                 <CreatePost />
               </div>
             </ProtectedRoute>

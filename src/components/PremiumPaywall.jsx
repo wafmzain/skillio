@@ -1,242 +1,280 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import PremiumBadge from './PremiumBadge'
+import { motion, AnimatePresence } from 'framer-motion'
 
-function PremiumPaywall({ onUpgrade, compact = false }) {
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
-
-  const features = [
-    { icon: '🔓', text: 'Unlock all premium insights' },
-    { icon: '🤖', text: 'AI summary unlimited' },
-    { icon: '✦', text: 'Premium creator badge' },
-    { icon: '📚', text: 'Exclusive workflows & templates' },
-    { icon: '🎯', text: 'Priority support' },
-    { icon: '🚀', text: 'Early access to new features' }
-  ]
-
-  if (compact) {
-    return (
-      <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 rounded-3xl p-8 overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl"></div>
-        
-        <div className="relative z-10 text-center">
-          <div className="inline-flex mb-4">
-            <PremiumBadge size="large" />
-          </div>
-          <h3 className="text-2xl font-bold text-white mb-3">
-            Skillio+ Exclusive
-          </h3>
-          <p className="text-slate-300 mb-6 leading-relaxed">
-            Unlock deeper creator insights and premium workflows
-          </p>
-          <button
-            onClick={() => setShowUpgradeModal(true)}
-            className="w-full px-6 py-3.5 bg-white text-slate-900 rounded-2xl font-bold hover:bg-slate-100 hover:scale-105 transition-all shadow-xl"
-          >
-            Upgrade to Skillio+
-          </button>
-        </div>
-
-        {showUpgradeModal && (
-          <UpgradeModal 
-            onClose={() => setShowUpgradeModal(false)}
-            onUpgrade={onUpgrade}
-          />
-        )}
-      </div>
-    )
+/* ---------------------------------------------------------------------------
+ * Icons
+ * ------------------------------------------------------------------------- */
+const Icon = ({ name, className = 'w-4 h-4' }) => {
+  const common = {
+    className,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
   }
+  switch (name) {
+    case 'sparkles':
+      return <svg {...common}><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg>
+    case 'check':
+      return <svg {...common}><path d="M20 6L9 17l-5-5"/></svg>
+    case 'lock':
+      return <svg {...common}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    case 'arrow-right':
+      return <svg {...common}><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    case 'x':
+      return <svg {...common}><path d="M18 6L6 18M6 6l12 12"/></svg>
+    case 'shield':
+      return <svg {...common}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    default:
+      return null
+  }
+}
+
+const PERKS = [
+  'AI Summary tanpa batas',
+  'Creator analytics lengkap',
+  'Badge Skillio+ verified',
+  'Enhanced creator profile',
+  'Early access fitur baru',
+  'Prioritas di discovery',
+]
+
+/* ---------------------------------------------------------------------------
+ * PremiumPaywall
+ * ------------------------------------------------------------------------- */
+function PremiumPaywall({ onUpgrade, compact = false }) {
+  const [showModal, setShowModal] = useState(false)
 
   return (
-    <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 rounded-3xl p-12 overflow-hidden">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl"></div>
-      
-      <div className="relative z-10 max-w-2xl mx-auto text-center">
-        <div className="inline-flex mb-6">
-          <PremiumBadge size="large" />
-        </div>
-        
-        <h2 className="text-4xl font-black text-white mb-4">
-          Skillio+ Exclusive Content
-        </h2>
-        <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-          Unlock deeper creator insights, premium workflows, and exclusive content from top creators
-        </p>
+    <>
+      <div
+        className={`relative overflow-hidden bg-gradient-to-br from-[#111827] to-[#1F2937] rounded-2xl text-white ${
+          compact ? 'p-6' : 'p-6 sm:p-10'
+        }`}
+      >
+        <div className="absolute -top-20 -right-20 w-80 h-80 bg-[#3B82F6]/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-20 w-72 h-72 bg-[#3B82F6]/15 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          {features.map((feature, index) => (
-            <div 
-              key={index}
-              className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-left"
-            >
-              <span className="text-2xl">{feature.icon}</span>
-              <span className="text-white font-semibold">{feature.text}</span>
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 text-white">
+              <Icon name="lock" className="w-5 h-5" />
+            </span>
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/10 text-white text-[10px] font-semibold">
+              <Icon name="sparkles" className="w-3 h-3" />
+              Skillio+ exclusive
             </div>
-          ))}
-        </div>
+          </div>
 
-        <button
-          onClick={() => setShowUpgradeModal(true)}
-          className="px-8 py-4 bg-white text-slate-900 rounded-2xl font-bold text-lg hover:bg-slate-100 hover:scale-105 transition-all shadow-2xl"
-        >
-          Upgrade to Skillio+ — Rp 49.000/bulan
-        </button>
+          <h3
+            className={`font-bold tracking-tight leading-tight mb-2 ${
+              compact ? 'text-xl' : 'text-2xl sm:text-3xl'
+            }`}
+          >
+            Insight ini hanya untuk member Skillio+
+          </h3>
+          <p
+            className={`text-white/70 leading-relaxed mb-6 ${
+              compact ? 'text-sm max-w-md' : 'text-sm sm:text-base max-w-xl'
+            }`}
+          >
+            Skillio+ bukan paywall konten biasa. Ini set tools produktivitas creator — AI assist,
+            analytics, dan badge verified untuk bangun personal brand.
+          </p>
+
+          {!compact && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-7">
+              {PERKS.map((p) => (
+                <div
+                  key={p}
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.04] border border-white/10"
+                >
+                  <span className="w-5 h-5 rounded-full bg-[#3B82F6]/20 text-[#60A5FA] flex items-center justify-center shrink-0">
+                    <Icon name="check" className="w-3 h-3" />
+                  </span>
+                  <span className="text-sm text-white/90">{p}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setShowModal(true)}
+              className="group inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-[#111827] bg-white hover:bg-[#F3F4F6] transition-colors"
+            >
+              Upgrade ke Skillio+
+              <Icon
+                name="arrow-right"
+                className="w-4 h-4 transition-transform group-hover:translate-x-0.5"
+              />
+            </button>
+            <Link
+              to="/premium"
+              className="inline-flex items-center gap-1.5 px-5 py-3 rounded-xl text-sm font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/10 transition-colors"
+            >
+              Pelajari lebih dulu
+            </Link>
+          </div>
+
+          <p className="text-[11px] text-white/50 mt-4 flex items-center gap-1.5">
+            <Icon name="shield" className="w-3 h-3" />
+            Batal kapan saja · Rp 49.000/bulan
+          </p>
+        </div>
       </div>
 
-      {showUpgradeModal && (
-        <UpgradeModal 
-          onClose={() => setShowUpgradeModal(false)}
-          onUpgrade={onUpgrade}
-        />
-      )}
-    </div>
+      <AnimatePresence>
+        {showModal && (
+          <UpgradeModal onClose={() => setShowModal(false)} onUpgrade={onUpgrade} />
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 
+/* ---------------------------------------------------------------------------
+ * UpgradeModal (shared with Premium.jsx but simpler local copy)
+ * ------------------------------------------------------------------------- */
 function UpgradeModal({ onClose, onUpgrade }) {
   const [selectedPayment, setSelectedPayment] = useState('qris')
   const [processing, setProcessing] = useState(false)
 
   const paymentMethods = [
-    { id: 'qris', name: 'QRIS', icon: '📱', popular: true },
-    { id: 'gopay', name: 'GoPay', icon: '💚' },
-    { id: 'dana', name: 'DANA', icon: '💙' },
-    { id: 'bank', name: 'Bank Transfer', icon: '🏦' }
+    { id: 'qris', name: 'QRIS', sub: 'Scan & bayar', popular: true },
+    { id: 'gopay', name: 'GoPay', sub: 'E-wallet' },
+    { id: 'dana', name: 'DANA', sub: 'E-wallet' },
+    { id: 'bank', name: 'Bank Transfer', sub: 'Virtual account' },
   ]
 
-  const features = [
-    'Unlock all premium insights',
-    'AI summary unlimited',
-    'Premium creator badge',
-    'Exclusive workflows & templates',
-    'Priority support',
-    'Early access to new features'
-  ]
-
-  async function handleSimulatePayment() {
+  async function handlePay() {
     setProcessing(true)
-    
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    if (onUpgrade) {
-      await onUpgrade(selectedPayment)
-    }
-    
+    await new Promise((r) => setTimeout(r, 1200))
+    if (onUpgrade) await onUpgrade(selectedPayment)
     setProcessing(false)
     onClose()
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
-      <div className="relative bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Close Button */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#111827]/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.98 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors z-10"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors z-10"
+          aria-label="Tutup"
         >
-          <span className="text-xl">✕</span>
+          <Icon name="x" className="w-4 h-4" />
         </button>
 
-        {/* Header */}
-        <div className="relative bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 p-8 text-white overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-          <div className="relative z-10">
-            <div className="inline-flex mb-4">
-              <PremiumBadge size="large" />
+        <div className="px-6 pt-6 pb-5 border-b border-[#E5E7EB]">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-semibold mb-3">
+            <Icon name="sparkles" className="w-3.5 h-3.5" />
+            Skillio+
+          </div>
+          <h2 className="text-xl font-bold text-[#111827] mb-1">Upgrade ke Skillio+</h2>
+          <p className="text-sm text-[#6B7280]">
+            Unlock creator tools — batal kapan saja.
+          </p>
+        </div>
+
+        <div className="px-6 py-5 border-b border-[#E5E7EB]">
+          <div className="flex items-end justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-[#6B7280] mb-0.5">
+                Total pembayaran
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-[#111827]">Rp 49.000</span>
+                <span className="text-xs text-[#6B7280]">/bulan</span>
+              </div>
             </div>
-            <h2 className="text-3xl font-black mb-2">Upgrade to Skillio+</h2>
-            <p className="text-purple-100">Unlock premium features and exclusive content</p>
+            <span className="text-[10px] text-[#6B7280]">Ditagih bulanan</span>
           </div>
         </div>
 
-        <div className="p-8">
-          {/* Pricing */}
-          <div className="bg-gradient-to-br from-slate-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-purple-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-600 font-semibold">Monthly Plan</span>
-              <span className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
-                <span>🔥</span>
-                <span>BEST VALUE</span>
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-black text-slate-900">Rp 49.000</span>
-              <span className="text-slate-500">/bulan</span>
-            </div>
+        <div className="px-6 py-5">
+          <div className="text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-3">
+            Metode pembayaran
           </div>
-
-          {/* Features */}
-          <div className="mb-6">
-            <h3 className="font-bold text-slate-900 mb-4">What you'll get:</h3>
-            <div className="space-y-3">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs">✓</span>
-                  </div>
-                  <span className="text-slate-700">{feature}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="mb-6">
-            <h3 className="font-bold text-slate-900 mb-4">Select Payment Method:</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {paymentMethods.map((method) => (
+          <div className="space-y-2">
+            {paymentMethods.map((m) => {
+              const active = selectedPayment === m.id
+              return (
                 <button
-                  key={method.id}
-                  onClick={() => setSelectedPayment(method.id)}
-                  className={`relative p-4 rounded-2xl border-2 transition-all ${
-                    selectedPayment === method.id
-                      ? 'border-purple-600 bg-purple-50'
-                      : 'border-slate-200 hover:border-purple-300 bg-white'
+                  key={m.id}
+                  onClick={() => setSelectedPayment(m.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
+                    active
+                      ? 'border-[#3B82F6] bg-[#3B82F6]/5'
+                      : 'border-[#E5E7EB] hover:border-[#3B82F6]/40'
                   }`}
                 >
-                  {method.popular && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      POPULAR
+                  <span
+                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      active ? 'border-[#3B82F6]' : 'border-[#E5E7EB]'
+                    }`}
+                  >
+                    {active && <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-[#111827]">{m.name}</div>
+                    <div className="text-[11px] text-[#6B7280]">{m.sub}</div>
+                  </div>
+                  {m.popular && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#3B82F6]/10 text-[#3B82F6]">
+                      Populer
                     </span>
                   )}
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{method.icon}</span>
-                    <span className="font-semibold text-slate-900">{method.name}</span>
-                  </div>
                 </button>
-              ))}
-            </div>
+              )
+            })}
           </div>
 
-          {/* Simulate Payment Button */}
           <button
-            onClick={handleSimulatePayment}
+            onClick={handlePay}
             disabled={processing}
-            className={`w-full py-4 rounded-2xl font-bold text-white transition-all ${
+            className={`w-full mt-5 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-white transition-all ${
               processing
-                ? 'bg-slate-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-xl hover:scale-105'
+                ? 'bg-[#9CA3AF] cursor-not-allowed'
+                : 'bg-gradient-to-r from-[#3B82F6] to-[#2563EB] hover:from-[#2563EB] hover:to-[#1D4ED8] shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/30'
             }`}
           >
             {processing ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Processing...
-              </span>
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Memproses...
+              </>
             ) : (
-              'Simulate Payment Success'
+              <>
+                <Icon name="lock" className="w-4 h-4" />
+                Bayar sekarang
+              </>
             )}
           </button>
 
-          <p className="text-center text-xs text-slate-500 mt-4">
-            This is a demo payment. No real transaction will occur.
+          <p className="text-[11px] text-[#9CA3AF] text-center mt-3 flex items-center justify-center gap-1.5">
+            <Icon name="shield" className="w-3 h-3" />
+            Demo payment — tidak ada transaksi nyata
           </p>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 

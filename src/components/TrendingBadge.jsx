@@ -1,124 +1,93 @@
 import { formatTrendingScore } from '../services/trending'
 
+const FireIcon = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 17l6-6 4 4 8-8" />
+    <path d="M14 7h7v7" />
+  </svg>
+)
+
 /**
- * Trending Badge Component
- * Shows when a post is trending with fire icon
+ * TrendingBadge — soft-blue pill used on cards and lists.
  */
-function TrendingBadge({ 
-  trendingScore = 0, 
+function TrendingBadge({
+  trendingScore = 0,
   size = 'default',
   showScore = false,
-  className = '' 
+  className = '',
 }) {
-  // Don't show badge if score is too low
   if (!trendingScore || trendingScore < 50) return null
 
   const sizeClasses = {
-    small: 'text-xs px-2 py-1',
-    default: 'text-sm px-3 py-1.5',
-    large: 'text-base px-4 py-2'
+    small: 'text-[10px] px-2 py-0.5 gap-1',
+    default: 'text-xs px-2.5 py-1 gap-1',
+    large: 'text-sm px-3 py-1.5 gap-1.5',
   }
 
   const iconSizes = {
-    small: 'text-xs',
-    default: 'text-sm', 
-    large: 'text-base'
+    small: 'w-2.5 h-2.5',
+    default: 'w-3 h-3',
+    large: 'w-3.5 h-3.5',
   }
 
   return (
-    <div className={`
-      inline-flex items-center gap-1.5 
-      bg-gradient-to-r from-orange-500 to-red-500 
-      text-white font-bold rounded-full
-      shadow-lg shadow-orange-500/30
-      hover:shadow-xl hover:shadow-orange-500/40
-      transition-all duration-300
-      ${sizeClasses[size]}
-      ${className}
-    `}>
-      <span className={`${iconSizes[size]} animate-pulse`}>🔥</span>
+    <span
+      className={`inline-flex items-center rounded-md bg-[#3B82F6]/10 text-[#3B82F6] font-semibold ${sizeClasses[size]} ${className}`}
+    >
+      <FireIcon className={iconSizes[size]} />
       <span>Trending</span>
       {showScore && (
-        <span className="opacity-90">
-          {formatTrendingScore(trendingScore)}
-        </span>
+        <span className="opacity-80 font-medium">· {formatTrendingScore(trendingScore)}</span>
       )}
-    </div>
+    </span>
   )
 }
 
 /**
- * Compact Trending Badge for cards
+ * CompactTrendingBadge — tiny chip for dense grids.
  */
 export function CompactTrendingBadge({ trendingScore = 0 }) {
   if (!trendingScore || trendingScore < 50) return null
-
   return (
-    <div className="
-      inline-flex items-center gap-1 
-      bg-gradient-to-r from-orange-500 to-red-500 
-      text-white text-xs font-bold 
-      px-2 py-1 rounded-full
-      shadow-md shadow-orange-500/30
-    ">
-      <span className="text-xs animate-pulse">🔥</span>
-      <span>Hot</span>
-    </div>
+    <span className="inline-flex items-center gap-1 rounded-md bg-[#3B82F6]/10 text-[#3B82F6] text-[10px] font-semibold px-2 py-0.5">
+      <FireIcon className="w-2.5 h-2.5" />
+      Trending
+    </span>
   )
 }
 
 /**
- * Trending Score Display (for debugging/admin)
+ * TrendingScoreDisplay — neutral slate chip for debug/admin views.
  */
 export function TrendingScoreDisplay({ trendingScore = 0, className = '' }) {
   if (!trendingScore) return null
-
   return (
-    <div className={`
-      inline-flex items-center gap-1.5 
-      bg-slate-100 text-slate-700 
-      text-xs font-medium 
-      px-2 py-1 rounded-lg
-      ${className}
-    `}>
-      <span>📊</span>
-      <span>Score: {formatTrendingScore(trendingScore)}</span>
-    </div>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-md bg-[#F3F4F6] text-[#6B7280] text-xs font-medium px-2 py-1 ${className}`}
+    >
+      <FireIcon className="w-3 h-3" />
+      Score {formatTrendingScore(trendingScore)}
+    </span>
   )
 }
 
 /**
- * Trending Indicator for lists
+ * TrendingIndicator — rank pill shown on the top-N items.
  */
 export function TrendingIndicator({ trendingScore = 0, position = 1 }) {
   if (!trendingScore || trendingScore < 50) return null
-
-  const getPositionColor = (pos) => {
-    if (pos === 1) return 'from-yellow-400 to-orange-500' // Gold
-    if (pos === 2) return 'from-gray-300 to-gray-500' // Silver  
-    if (pos === 3) return 'from-amber-600 to-amber-800' // Bronze
-    return 'from-orange-500 to-red-500' // Default trending
-  }
-
-  const getPositionIcon = (pos) => {
-    if (pos === 1) return '🥇'
-    if (pos === 2) return '🥈'
-    if (pos === 3) return '🥉'
-    return '🔥'
-  }
-
   return (
-    <div className={`
-      inline-flex items-center gap-1 
-      bg-gradient-to-r ${getPositionColor(position)}
-      text-white text-xs font-bold 
-      px-2 py-1 rounded-full
-      shadow-lg
-      animate-pulse
-    `}>
-      <span>{getPositionIcon(position)}</span>
-      <span>#{position}</span>
-    </div>
+    <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-md bg-[#111827] text-white text-[10px] font-bold ring-2 ring-white">
+      #{position}
+    </span>
   )
 }
 

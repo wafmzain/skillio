@@ -2,10 +2,88 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from './services/supabaseClient'
 import FollowButton from './FollowButton'
-import PremiumBadge from './components/PremiumBadge'
-import { CompactTrendingBadge } from './components/TrendingBadge'
 import { usePremium } from './hooks/usePremium'
-import { CompactViewCounter } from './components/ViewCounter'
+import { formatViews } from './utils/formatViews'
+
+/* Minimal stroke icon set shared with the rest of the app */
+const Icon = ({ name, className = 'w-4 h-4', filled = false }) => {
+  const common = {
+    className,
+    viewBox: '0 0 24 24',
+    fill: filled ? 'currentColor' : 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  }
+  switch (name) {
+    case 'heart':
+      return (
+        <svg {...common}>
+          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6z" />
+        </svg>
+      )
+    case 'message':
+      return (
+        <svg {...common}>
+          <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z" />
+        </svg>
+      )
+    case 'bookmark':
+      return (
+        <svg {...common}>
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </svg>
+      )
+    case 'eye':
+      return (
+        <svg {...common}>
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      )
+    case 'trending':
+      return (
+        <svg {...common}>
+          <path d="M3 17l6-6 4 4 8-8" />
+          <path d="M14 7h7v7" />
+        </svg>
+      )
+    case 'lock':
+      return (
+        <svg {...common}>
+          <rect x="4" y="11" width="16" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </svg>
+      )
+    case 'sparkles':
+      return (
+        <svg {...common}>
+          <path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3z" />
+          <path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z" />
+        </svg>
+      )
+    case 'dot':
+      return (
+        <svg {...common} fill="currentColor" stroke="none">
+          <circle cx="12" cy="12" r="2" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
+
+function timeAgo(iso) {
+  if (!iso) return ''
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000
+  if (diff < 60) return 'baru saja'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}j`
+  if (diff < 2592000) return `${Math.floor(diff / 86400)}h`
+  if (diff < 31536000) return `${Math.floor(diff / 2592000)}bl`
+  return `${Math.floor(diff / 31536000)}th`
+}
 
 function PostCard({ post, currentUser, showAuthor = true }) {
   const [isBookmarked, setIsBookmarked] = useState(false)
@@ -14,137 +92,73 @@ function PostCard({ post, currentUser, showAuthor = true }) {
   const [bookmarksCount, setBookmarksCount] = useState(post.bookmarks_count || 0)
   const [commentsCount, setCommentsCount] = useState(post.comments_count || 0)
   const [loading, setLoading] = useState(false)
-  
+
   const { isPremium } = usePremium(currentUser?.id)
   const isLocked = post.is_premium && !isPremium
+  const isTrending = (post.trending_score || 0) >= 50
 
   useEffect(() => {
-    console.log('🔄 [PostCard useEffect] Post changed:', post.id)
-    console.log('📊 [PostCard useEffect] Initial likes_count from post:', post.likes_count)
-    console.log('📊 [PostCard useEffect] Initial bookmarks_count from post:', post.bookmarks_count)
-    console.log('📊 [PostCard useEffect] Initial comments_count from post:', post.comments_count)
-    
-    // If counts are null from database, count manually immediately
-    if (post.likes_count === null) {
-      console.warn('⚠️ [PostCard useEffect] likes_count is null, will count manually')
-      countLikesManually()
-    } else {
-      setLikesCount(post.likes_count || 0)
-    }
-    
-    if (post.bookmarks_count === null) {
-      console.warn('⚠️ [PostCard useEffect] bookmarks_count is null, will count manually')
-      countBookmarksManually()
-    } else {
-      setBookmarksCount(post.bookmarks_count || 0)
-    }
-    
-    if (post.comments_count === null) {
-      console.warn('⚠️ [PostCard useEffect] comments_count is null, will count manually')
-      countCommentsManually()
-    } else {
-      setCommentsCount(post.comments_count || 0)
-    }
-    
+    if (post.likes_count === null) countLikesManually()
+    else setLikesCount(post.likes_count || 0)
+
+    if (post.bookmarks_count === null) countBookmarksManually()
+    else setBookmarksCount(post.bookmarks_count || 0)
+
+    if (post.comments_count === null) countCommentsManually()
+    else setCommentsCount(post.comments_count || 0)
+
     if (currentUser) {
-      console.log('👤 [PostCard useEffect] Current user exists, checking interactions')
       checkUserInteractions()
     } else {
-      console.log('👤 [PostCard useEffect] No current user, resetting states')
-      // Reset states if no user
       setIsLiked(false)
       setIsBookmarked(false)
     }
   }, [currentUser, post.id, post.likes_count, post.bookmarks_count, post.comments_count])
 
   async function countLikesManually() {
-    console.log('🔢 [countLikesManually] Counting likes for post:', post.id)
     const { count, error } = await supabase
       .from('post_likes')
       .select('*', { count: 'exact', head: true })
       .eq('post_id', post.id)
-    
-    if (error) {
-      console.error('❌ [countLikesManually] Error:', error)
-    } else {
-      console.log('✅ [countLikesManually] Manual count:', count)
-      setLikesCount(count || 0)
-    }
+    if (!error) setLikesCount(count || 0)
   }
 
   async function countBookmarksManually() {
-    console.log('🔢 [countBookmarksManually] Counting bookmarks for post:', post.id)
     const { count, error } = await supabase
       .from('post_bookmarks')
       .select('*', { count: 'exact', head: true })
       .eq('post_id', post.id)
-    
-    if (error) {
-      console.error('❌ [countBookmarksManually] Error:', error)
-    } else {
-      console.log('✅ [countBookmarksManually] Manual count:', count)
-      setBookmarksCount(count || 0)
-    }
+    if (!error) setBookmarksCount(count || 0)
   }
 
   async function countCommentsManually() {
-    console.log('🔢 [countCommentsManually] Counting comments for post:', post.id)
     const { count, error } = await supabase
       .from('comments')
       .select('*', { count: 'exact', head: true })
       .eq('post_id', post.id)
-    
-    if (error) {
-      console.error('❌ [countCommentsManually] Error:', error)
-    } else {
-      console.log('✅ [countCommentsManually] Manual count:', count)
-      setCommentsCount(count || 0)
-    }
+    if (!error) setCommentsCount(count || 0)
   }
 
   async function checkUserInteractions() {
-    console.log('🔍 [checkUserInteractions] Checking user interactions')
-    console.log('🔍 [checkUserInteractions] User ID:', currentUser.id)
-    console.log('🔍 [checkUserInteractions] Post ID:', post.id)
-    
     try {
-      // Check bookmark - use limit(1) to avoid multiple rows error
-      const { data: bookmarkData, error: bookmarkError } = await supabase
+      const { data: bookmarkData } = await supabase
         .from('post_bookmarks')
         .select('id')
         .eq('user_id', currentUser.id)
         .eq('post_id', post.id)
         .limit(1)
         .maybeSingle()
+      setIsBookmarked(!!bookmarkData)
 
-      if (bookmarkError) {
-        console.error('❌ [checkUserInteractions] Error checking bookmark:', bookmarkError)
-        setIsBookmarked(false)
-      } else {
-        console.log('✅ [checkUserInteractions] Bookmark data:', bookmarkData)
-        console.log('🔖 [checkUserInteractions] Is bookmarked:', !!bookmarkData)
-        setIsBookmarked(!!bookmarkData)
-      }
-
-      // Check like - use limit(1) to avoid multiple rows error
-      const { data: likeData, error: likeError } = await supabase
+      const { data: likeData } = await supabase
         .from('post_likes')
         .select('id')
         .eq('user_id', currentUser.id)
         .eq('post_id', post.id)
         .limit(1)
         .maybeSingle()
-
-      if (likeError) {
-        console.error('❌ [checkUserInteractions] Error checking like:', likeError)
-        setIsLiked(false)
-      } else {
-        console.log('✅ [checkUserInteractions] Like data:', likeData)
-        console.log('👍 [checkUserInteractions] Is liked:', !!likeData)
-        setIsLiked(!!likeData)
-      }
-    } catch (err) {
-      console.error('❌ [checkUserInteractions] Unexpected error:', err)
+      setIsLiked(!!likeData)
+    } catch {
       setIsLiked(false)
       setIsBookmarked(false)
     }
@@ -153,54 +167,39 @@ function PostCard({ post, currentUser, showAuthor = true }) {
   async function handleBookmark(e) {
     e.preventDefault()
     e.stopPropagation()
-
     if (!currentUser) {
       alert('Silakan login terlebih dahulu')
       return
     }
-
     if (loading) return
     setLoading(true)
 
+    // Optimistic update
+    const prevBookmarked = isBookmarked
+    const prevCount = bookmarksCount
+    setIsBookmarked(!prevBookmarked)
+    setBookmarksCount(prevBookmarked ? Math.max(0, prevCount - 1) : prevCount + 1)
+
     try {
-      if (isBookmarked) {
-        // Remove bookmark
+      if (prevBookmarked) {
         const { error } = await supabase
           .from('post_bookmarks')
           .delete()
           .eq('user_id', currentUser.id)
           .eq('post_id', post.id)
-
-        if (error) {
-          console.error('Error removing bookmark:', error)
-          alert(`Gagal menghapus bookmark: ${error.message}`)
-        }
+        if (error) throw error
       } else {
-        // Add bookmark
         const { error } = await supabase
           .from('post_bookmarks')
           .insert([{ user_id: currentUser.id, post_id: post.id }])
-
-        if (error) {
-          console.error('Error adding bookmark:', error)
-          
-          if (error.code === '23505') {
-            // Already bookmarked, just update UI
-            setIsBookmarked(true)
-          } else if (error.code === '42P01') {
-            alert('Tabel post_bookmarks belum dibuat. Silakan jalankan database-bookmarks-setup.sql di Supabase SQL Editor.')
-          } else {
-            alert(`Gagal menambahkan bookmark: ${error.message}`)
-          }
-        }
+        if (error && error.code !== '23505') throw error
       }
-
-      // Fetch fresh data from database after bookmark/unbookmark
       await refreshPostData()
-      
     } catch (err) {
-      console.error('Unexpected error:', err)
-      alert('Terjadi kesalahan. Silakan coba lagi.')
+      // Revert optimistic update on failure
+      setIsBookmarked(prevBookmarked)
+      setBookmarksCount(prevCount)
+      console.error('Bookmark error:', err)
     } finally {
       setLoading(false)
     }
@@ -209,209 +208,194 @@ function PostCard({ post, currentUser, showAuthor = true }) {
   async function handleLike(e) {
     e.preventDefault()
     e.stopPropagation()
-
-    console.log('❤️ [handleLike] Like button clicked')
-    console.log('❤️ [handleLike] Current user:', currentUser?.id)
-    console.log('❤️ [handleLike] Post ID:', post.id)
-    console.log('❤️ [handleLike] Current isLiked:', isLiked)
-    console.log('❤️ [handleLike] Current likesCount:', likesCount)
-
     if (!currentUser) {
-      console.warn('⚠️ [handleLike] No current user, showing alert')
       alert('Silakan login terlebih dahulu')
       return
     }
-
-    if (loading) {
-      console.warn('⚠️ [handleLike] Already loading, skipping')
-      return
-    }
-    
+    if (loading) return
     setLoading(true)
 
+    const prevLiked = isLiked
+    const prevCount = likesCount
+    setIsLiked(!prevLiked)
+    setLikesCount(prevLiked ? Math.max(0, prevCount - 1) : prevCount + 1)
+
     try {
-      if (isLiked) {
-        console.log('👎 [handleLike] Unliking post...')
-        // Unlike - Remove like
+      if (prevLiked) {
         const { error } = await supabase
           .from('post_likes')
           .delete()
           .eq('user_id', currentUser.id)
           .eq('post_id', post.id)
-
-        if (error) {
-          console.error('❌ [handleLike] Error removing like:', error)
-          alert(`Gagal menghapus like: ${error.message}`)
-        } else {
-          console.log('✅ [handleLike] Like removed successfully')
-        }
+        if (error) throw error
       } else {
-        console.log('👍 [handleLike] Liking post...')
-        // Like - Add like
         const { error } = await supabase
           .from('post_likes')
           .insert([{ user_id: currentUser.id, post_id: post.id }])
-
-        if (error) {
-          console.error('❌ [handleLike] Error adding like:', error)
-          
-          if (error.code === '23505') {
-            console.warn('⚠️ [handleLike] Already liked (duplicate), updating UI')
-            setIsLiked(true)
-          } else if (error.code === '42P01') {
-            alert('Tabel post_likes belum dibuat. Silakan jalankan database-likes-setup.sql di Supabase SQL Editor.')
-          } else {
-            alert(`Gagal menambahkan like: ${error.message}`)
-          }
-        } else {
-          console.log('✅ [handleLike] Like added successfully')
-        }
+        if (error && error.code !== '23505') throw error
       }
-
-      // Fetch fresh data from database after like/unlike
-      console.log('🔄 [handleLike] Refreshing post data...')
       await refreshPostData()
-      console.log('✅ [handleLike] Post data refreshed')
-      
     } catch (err) {
-      console.error('❌ [handleLike] Unexpected error:', err)
-      alert('Terjadi kesalahan. Silakan coba lagi.')
+      setIsLiked(prevLiked)
+      setLikesCount(prevCount)
+      console.error('Like error:', err)
     } finally {
       setLoading(false)
-      console.log('✅ [handleLike] Like operation complete')
     }
   }
 
   async function refreshPostData() {
-    console.log('🔄 [refreshPostData] Starting refresh for post:', post.id)
-    console.log('🔄 [refreshPostData] Current user:', currentUser?.id)
-    
     try {
-      // Fetch updated post data from database
-      const { data: updatedPost, error: postError } = await supabase
+      const { data: updatedPost } = await supabase
         .from('posts')
         .select('likes_count, bookmarks_count')
         .eq('id', post.id)
         .single()
 
-      if (postError) {
-        console.error('❌ [refreshPostData] Error fetching updated post:', postError)
-      } else {
-        console.log('✅ [refreshPostData] Updated post data:', updatedPost)
-        console.log('📊 [refreshPostData] New likes_count:', updatedPost.likes_count)
-        console.log('📊 [refreshPostData] New bookmarks_count:', updatedPost.bookmarks_count)
-        
-        // If counts are null, count manually from tables
-        if (updatedPost.likes_count === null) {
-          console.warn('⚠️ [refreshPostData] likes_count is null, counting manually...')
-          const { count, error: countError } = await supabase
-            .from('post_likes')
-            .select('*', { count: 'exact', head: true })
-            .eq('post_id', post.id)
-          
-          if (!countError) {
-            console.log('📊 [refreshPostData] Manual likes count:', count)
-            setLikesCount(count || 0)
-          }
-        } else {
-          setLikesCount(updatedPost.likes_count || 0)
-        }
-        
-        if (updatedPost.bookmarks_count === null) {
-          console.warn('⚠️ [refreshPostData] bookmarks_count is null, counting manually...')
-          const { count, error: countError } = await supabase
-            .from('post_bookmarks')
-            .select('*', { count: 'exact', head: true })
-            .eq('post_id', post.id)
-          
-          if (!countError) {
-            console.log('📊 [refreshPostData] Manual bookmarks count:', count)
-            setBookmarksCount(count || 0)
-          }
-        } else {
-          setBookmarksCount(updatedPost.bookmarks_count || 0)
-        }
+      if (updatedPost) {
+        if (updatedPost.likes_count === null) await countLikesManually()
+        else setLikesCount(updatedPost.likes_count || 0)
+
+        if (updatedPost.bookmarks_count === null) await countBookmarksManually()
+        else setBookmarksCount(updatedPost.bookmarks_count || 0)
       }
 
-      // Check current user's like status - use limit(1) to avoid multiple rows error
-      const { data: likeData, error: likeError } = await supabase
+      if (!currentUser) return
+
+      const { data: likeData } = await supabase
         .from('post_likes')
         .select('id')
         .eq('user_id', currentUser.id)
         .eq('post_id', post.id)
         .limit(1)
         .maybeSingle()
+      setIsLiked(!!likeData)
 
-      if (likeError) {
-        console.error('❌ [refreshPostData] Error checking like:', likeError)
-      } else {
-        console.log('✅ [refreshPostData] Like data:', likeData)
-        console.log('👍 [refreshPostData] Is liked:', !!likeData)
-        setIsLiked(!!likeData)
-      }
-
-      // Check current user's bookmark status
-      const { data: bookmarkData, error: bookmarkError } = await supabase
+      const { data: bookmarkData } = await supabase
         .from('post_bookmarks')
         .select('id')
         .eq('user_id', currentUser.id)
         .eq('post_id', post.id)
         .limit(1)
         .maybeSingle()
-
-      if (bookmarkError) {
-        console.error('❌ [refreshPostData] Error checking bookmark:', bookmarkError)
-      } else {
-        console.log('✅ [refreshPostData] Bookmark data:', bookmarkData)
-        console.log('🔖 [refreshPostData] Is bookmarked:', !!bookmarkData)
-        setIsBookmarked(!!bookmarkData)
-      }
-      
-      console.log('✅ [refreshPostData] Refresh complete')
+      setIsBookmarked(!!bookmarkData)
     } catch (err) {
-      console.error('❌ [refreshPostData] Unexpected error:', err)
+      console.error('refreshPostData error:', err)
     }
   }
 
   return (
-    <div className="group bg-white/80 backdrop-blur-xl rounded-3xl border border-slate-200/60 overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/10 hover:border-purple-300/60 transition-all duration-300">
+    <article className="group bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_8px_30px_-8px_rgba(59,130,246,0.12)] hover:-translate-y-0.5 transition-all duration-200">
+      {/* Header: author + timestamp */}
+      {showAuthor && post.profiles && (
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <Link
+            to={`/u/${post.profiles.username}`}
+            className="flex items-center gap-3 min-w-0 flex-1 group/author"
+          >
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-semibold shrink-0 overflow-hidden ring-2 ring-white shadow-sm">
+              {post.profiles.avatar_url ? (
+                <img
+                  src={post.profiles.avatar_url}
+                  alt={post.profiles.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                post.profiles.name.charAt(0).toUpperCase()
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-semibold text-[#111827] truncate group-hover/author:text-[#3B82F6] transition-colors">
+                  {post.profiles.name}
+                </span>
+                {post.profiles.is_premium && (
+                  <span
+                    title="Skillio+ Creator"
+                    className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#3B82F6] text-white"
+                  >
+                    <Icon name="sparkles" className="w-2.5 h-2.5" />
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1 text-xs text-[#6B7280]">
+                <span className="truncate">@{post.profiles.username}</span>
+                <Icon name="dot" className="w-2.5 h-2.5" />
+                <span className="shrink-0">{timeAgo(post.created_at)}</span>
+              </div>
+            </div>
+          </Link>
+
+          <FollowButton
+            profileId={post.profiles.id}
+            profileUsername={post.profiles.username}
+            currentUser={currentUser}
+            size="small"
+            showCount={false}
+          />
+        </div>
+      )}
+
+      {/* Body */}
+      <div className="px-5 pb-4">
+        {/* Meta row: category + trending */}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          {post.category && (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#F3F4F6] text-[11px] font-medium text-[#6B7280]">
+              {post.category}
+            </span>
+          )}
+          {isTrending && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#3B82F6]/10 text-[#3B82F6] text-[11px] font-semibold">
+              <Icon name="trending" className="w-3 h-3" />
+              Trending
+            </span>
+          )}
+          {post.is_premium && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 text-[11px] font-semibold">
+              <Icon name="sparkles" className="w-3 h-3" />
+              Skillio+
+            </span>
+          )}
+        </div>
+
+        {/* Title */}
+        <Link to={`/post/${post.id}`} className="block">
+          <h3 className="text-lg sm:text-xl font-semibold text-[#111827] leading-snug mb-2 line-clamp-2 group-hover:text-[#3B82F6] transition-colors">
+            {post.title}
+          </h3>
+        </Link>
+
+        {/* Excerpt */}
+        {post.excerpt && (
+          <Link to={`/post/${post.id}`} className="block">
+            <p
+              className={`text-sm text-[#6B7280] leading-relaxed line-clamp-3 ${
+                isLocked ? 'blur-[3px] select-none' : ''
+              }`}
+            >
+              {post.excerpt}
+            </p>
+          </Link>
+        )}
+      </div>
+
       {/* Thumbnail */}
       {post.thumbnail_url && (
-        <Link to={`/post/${post.id}`} className="block">
-          <div className="relative w-full h-56 bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden">
-            <img 
-              src={post.thumbnail_url} 
+        <Link to={`/post/${post.id}`} className="block px-5 pb-4">
+          <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden bg-[#F3F4F6] border border-[#E5E7EB]">
+            <img
+              src={post.thumbnail_url}
               alt={post.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              onError={(e) => {
-                e.target.style.display = 'none'
-              }}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+              onError={(e) => { e.target.style.display = 'none' }}
             />
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            
-            {/* Category Badge on Thumbnail */}
-            <div className="absolute top-4 left-4 flex items-center gap-2">
-              <div className="bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold text-slate-700 shadow-lg">
-                {post.category}
-              </div>
-              {/* Trending Badge */}
-              <CompactTrendingBadge trendingScore={post.trending_score} />
-            </div>
-
-            {/* Premium Badge on Thumbnail */}
-            {post.is_premium && (
-              <div className="absolute top-4 right-4">
-                <PremiumBadge size="small" />
-              </div>
-            )}
-
-            {/* Lock Overlay for Premium Content */}
             {isLocked && (
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/60 to-transparent flex items-end justify-center pb-6">
-                <div className="text-center">
-                  <span className="text-4xl mb-2 block">🔒</span>
-                  <p className="text-white font-bold text-sm">Skillio+ Exclusive</p>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#111827]/80 via-[#111827]/40 to-transparent flex items-end justify-center pb-5">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/95 text-[#111827] text-xs font-semibold">
+                  <Icon name="lock" className="w-3.5 h-3.5" />
+                  Skillio+ Exclusive
                 </div>
               </div>
             )}
@@ -419,132 +403,70 @@ function PostCard({ post, currentUser, showAuthor = true }) {
         </Link>
       )}
 
-      <div className="p-6">
-        {/* Creator Info */}
-        {showAuthor && post.profiles && (
-          <div className="flex items-center justify-between mb-5">
-            <Link 
-              to={`/u/${post.profiles.username}`}
-              className="no-underline flex items-center gap-3 group/author flex-1 min-w-0"
-            >
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-purple-600 via-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-purple-500/30 group-hover/author:scale-110 transition-transform flex-shrink-0">
-                {post.profiles.avatar_url ? (
-                  <img src={post.profiles.avatar_url} alt={post.profiles.name} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  post.profiles.name.charAt(0).toUpperCase()
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-slate-900 group-hover/author:text-purple-600 transition-colors truncate">
-                    {post.profiles.name}
-                  </p>
-                  {post.profiles.is_premium && (
-                    <PremiumBadge size="tiny" />
-                  )}
-                </div>
-                <p className="text-xs text-slate-500 truncate">
-                  @{post.profiles.username}
-                </p>
-              </div>
-            </Link>
-            
-            {/* Follow Button */}
-            <FollowButton 
-              profileId={post.profiles.id}
-              profileUsername={post.profiles.username}
-              currentUser={currentUser}
-              size="small"
-              showCount={false}
-            />
+      {/* Premium CTA */}
+      {isLocked && !post.thumbnail_url && (
+        <div className="mx-5 mb-4 p-3.5 rounded-xl bg-blue-50/70 border border-blue-100 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6] flex items-center justify-center shrink-0">
+            <Icon name="lock" className="w-4 h-4" />
           </div>
-        )}
-
-        {/* Title */}
-        <Link to={`/post/${post.id}`} className="no-underline">
-          <div className="flex items-start gap-2 mb-3">
-            <h3 className="flex-1 text-xl font-bold text-slate-900 group-hover:text-purple-600 transition-colors line-clamp-2 leading-tight">
-              {post.title}
-            </h3>
-            {post.is_premium && !post.thumbnail_url && (
-              <PremiumBadge size="small" />
-            )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-[#111827]">Insight eksklusif Skillio+</p>
+            <p className="text-xs text-[#6B7280]">Upgrade untuk buka konten ini</p>
           </div>
-        </Link>
-
-        {/* Excerpt */}
-        <Link to={`/post/${post.id}`} className="no-underline">
-          <p className={`text-slate-600 leading-relaxed mb-5 text-sm line-clamp-3 ${isLocked ? 'blur-sm' : ''}`}>
-            {post.excerpt}
-          </p>
-        </Link>
-
-        {/* Premium Lock Message */}
-        {isLocked && (
-          <div className="mb-5 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl border border-purple-200">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🔒</span>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-slate-900">Skillio+ Exclusive</p>
-                <p className="text-xs text-slate-600">Upgrade to unlock this premium content</p>
-              </div>
-              <Link to="/premium">
-                <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-xs font-bold hover:scale-105 transition-all">
-                  Upgrade
-                </button>
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Engagement Stats */}
-        <div className="flex items-center justify-between pt-5 border-t border-slate-100">
-          <div className="flex items-center gap-5 text-sm">
-            {/* Like Button */}
-            <button
-              onClick={handleLike}
-              disabled={loading}
-              className={`group/like flex items-center gap-2 transition-all duration-300 ${
-                isLiked ? 'text-red-500' : 'text-slate-600 hover:text-red-500'
-              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <span className={`text-lg transition-transform duration-300 ${
-                isLiked ? 'scale-125' : 'group-hover/like:scale-125'
-              }`}>
-                {isLiked ? '❤️' : '🤍'}
-              </span>
-              <span className="font-semibold">{likesCount}</span>
+          <Link to="/premium" className="shrink-0">
+            <button className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] transition-colors">
+              Upgrade
             </button>
+          </Link>
+        </div>
+      )}
 
-            {/* Comments */}
-            <Link to={`/post/${post.id}`} className="group/comment flex items-center gap-2 hover:text-purple-600 transition-colors no-underline text-slate-600">
-              <span className="text-lg group-hover/comment:scale-125 transition-transform">💬</span>
-              <span className="font-semibold">{commentsCount}</span>
-            </Link>
+      {/* Engagement bar */}
+      <div className="flex items-center justify-between px-5 py-3 border-t border-[#F3F4F6]">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleLike}
+            disabled={loading}
+            aria-label="Suka"
+            className={`group/btn inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              isLiked
+                ? 'text-[#EF4444] bg-red-50'
+                : 'text-[#6B7280] hover:text-[#EF4444] hover:bg-red-50/60'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            <Icon name="heart" className="w-4 h-4 transition-transform group-hover/btn:scale-110" filled={isLiked} />
+            <span>{formatViews(likesCount)}</span>
+          </button>
 
-            {/* Views */}
-            <CompactViewCounter viewCount={post.views_count || 0} />
-          </div>
+          <Link
+            to={`/post/${post.id}`}
+            className="group/btn inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#6B7280] hover:text-[#3B82F6] hover:bg-blue-50/60 transition-colors"
+          >
+            <Icon name="message" className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
+            <span>{formatViews(commentsCount)}</span>
+          </Link>
 
-          {/* Bookmark Button */}
           <button
             onClick={handleBookmark}
             disabled={loading}
-            className={`group/bookmark px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
-              isBookmarked 
-                ? 'bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-lg shadow-purple-500/40 hover:shadow-xl hover:scale-105' 
-                : 'bg-slate-100 text-slate-600 hover:bg-gradient-to-r hover:from-purple-600 hover:to-blue-500 hover:text-white hover:scale-105 hover:shadow-lg'
-            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            aria-label="Simpan"
+            className={`group/btn inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              isBookmarked
+                ? 'text-[#3B82F6] bg-blue-50'
+                : 'text-[#6B7280] hover:text-[#3B82F6] hover:bg-blue-50/60'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            <span className={`inline-block transition-transform duration-300 ${isBookmarked ? 'scale-110' : 'group-hover/bookmark:scale-110'}`}>
-              {isBookmarked ? '🔖' : '🔖'}
-            </span>
-            {' '}
-            {isBookmarked ? 'Tersimpan' : 'Simpan'}
+            <Icon name="bookmark" className="w-4 h-4 transition-transform group-hover/btn:scale-110" filled={isBookmarked} />
+            <span>{formatViews(bookmarksCount)}</span>
           </button>
         </div>
+
+        <div className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF]">
+          <Icon name="eye" className="w-3.5 h-3.5" />
+          <span>{formatViews(post.views_count || 0)}</span>
+        </div>
       </div>
-    </div>
+    </article>
   )
 }
 

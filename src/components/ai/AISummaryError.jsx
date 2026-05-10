@@ -1,101 +1,88 @@
 /**
- * AI Summary Error Component
- * Shows error state with retry functionality
+ * AI Summary Error — compact retry card.
  */
 function AISummaryError({ error, onRetry, onClose }) {
   return (
-    <div className="bg-white rounded-3xl shadow-xl shadow-red-200/30 border border-red-100 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-red-50 to-orange-50 px-8 py-6 border-b border-red-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center">
-              <span className="text-white text-lg">⚠️</span>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-slate-900">Gagal Membuat Summary</h3>
-              <p className="text-sm text-red-600">Terjadi kesalahan saat memproses</p>
-            </div>
-          </div>
-          
-          {/* Close button */}
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors duration-200 group"
+    <div className="bg-white border border-red-200 rounded-2xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-red-100 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 shrink-0">
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <svg 
-                className="w-4 h-4 text-slate-500 group-hover:text-slate-700" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-[#111827]">Gagal membuat summary</h3>
+            <p className="text-[11px] text-red-600">Coba lagi dalam beberapa saat</p>
+          </div>
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors"
+            aria-label="Tutup"
+          >
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {/* Content */}
-      <div className="px-8 py-6">
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
-          <p className="text-red-700 text-sm leading-relaxed">
-            {error || 'Terjadi kesalahan yang tidak diketahui'}
+      <div className="px-5 py-5">
+        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-4">
+          <p className="text-xs text-red-700 leading-relaxed">
+            {error || 'Terjadi kesalahan yang tidak diketahui.'}
           </p>
         </div>
 
-        {/* Common solutions */}
-        <div className="mb-6">
-          <h4 className="text-sm font-semibold text-slate-700 mb-3">Solusi yang bisa dicoba:</h4>
-          <ul className="text-sm text-slate-600 space-y-2">
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500 mt-0.5">•</span>
-              <span>Periksa koneksi internet Anda</span>
+        <ul className="space-y-2 text-xs text-[#6B7280] mb-5">
+          {[
+            'Periksa koneksi internet kamu',
+            'Tunggu beberapa saat dan coba lagi',
+            'Pastikan konten insight cukup panjang',
+          ].map((t) => (
+            <li key={t} className="flex items-start gap-2 leading-relaxed">
+              <span className="w-1 h-1 rounded-full bg-[#3B82F6] mt-1.5 shrink-0" />
+              {t}
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500 mt-0.5">•</span>
-              <span>Tunggu beberapa saat dan coba lagi</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500 mt-0.5">•</span>
-              <span>Pastikan konten post tidak terlalu pendek</span>
-            </li>
-          </ul>
-        </div>
+          ))}
+        </ul>
 
-        {/* Action buttons */}
-        <div className="flex gap-3">
+        <div className="flex items-center gap-2">
           {onRetry && (
             <button
               onClick={onRetry}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/25"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] shadow-sm shadow-blue-500/20 transition-colors"
             >
-              🔄 Coba Lagi
+              Coba lagi
             </button>
           )}
-          
           {onClose && (
             <button
               onClick={onClose}
-              className="px-6 py-3 rounded-xl font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-all duration-200"
+              className="px-4 py-2 rounded-xl text-sm font-semibold text-[#111827] bg-white border border-[#E5E7EB] hover:bg-[#F9FAFB] transition-colors"
             >
               Tutup
             </button>
           )}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="bg-slate-50 px-8 py-4 border-t border-slate-100">
-        <div className="flex items-center justify-between text-sm text-slate-500">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-            <span>Powered by Groq AI</span>
-          </div>
-          <div className="text-xs">
-            Error saat memproses
-          </div>
         </div>
       </div>
     </div>
