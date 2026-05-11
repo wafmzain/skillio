@@ -123,7 +123,7 @@ const FeedMockup = () => {
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-[#3B82F6]" />
-            <span className="text-xs font-semibold text-[#111827]">Feed Kreator</span>
+            <span className="text-xs font-semibold text-[#111827]">Feed Komunitas</span>
           </div>
           <div className="flex gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#E5E7EB]" />
@@ -184,7 +184,7 @@ const FeedMockup = () => {
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-semibold text-[#111827]">Rizky P.</span>
                 <span className="text-[#9CA3AF]"><Icon name="dot" className="w-3 h-3" /></span>
-                <span className="text-xs text-[#6B7280]">Content Creator</span>
+                <span className="text-xs text-[#6B7280]">Mahasiswa</span>
               </div>
               <span className="text-xs text-[#9CA3AF]">5 jam lalu</span>
             </div>
@@ -194,7 +194,7 @@ const FeedMockup = () => {
           </div>
 
           <p className="text-sm text-[#111827] leading-relaxed mb-3">
-            3 prompt AI yang aku pakai setiap hari untuk research konten. Hemat 4 jam per minggu.
+            3 tools gratis yang aku pakai buat riset tugas akhir. Hemat 4 jam per minggu.
           </p>
 
           <div className="flex items-center gap-5 text-xs text-[#6B7280]">
@@ -224,7 +224,7 @@ const FeedMockup = () => {
           ))}
         </div>
         <div>
-          <div className="text-[10px] text-[#6B7280] leading-tight">Creator aktif</div>
+          <div className="text-[10px] text-[#6B7280] leading-tight">Anggota aktif</div>
           <div className="text-xs font-semibold text-[#111827] leading-tight">2.4K online</div>
         </div>
       </div>
@@ -255,13 +255,13 @@ function LandingPage({ user }) {
             <div className="relative">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E5E7EB] text-xs font-medium text-[#111827] shadow-sm mb-6">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6] animate-pulse" />
-                Jaringan creator berbagi insight
+                Tempat berbagi insight & pengalaman
               </span>
 
               <h1 className="text-[clamp(2.25rem,5vw,3.75rem)] font-bold leading-[1.1] tracking-tight text-[#111827] mb-6">
-                Bagikan Insight Kreatifmu ke{' '}
+                Bagikan Insight dan Pengalamanmu ke{' '}
                 <span className="relative inline-block">
-                  <span className="text-[#3B82F6]">Komunitas Creator</span>
+                  <span className="text-[#3B82F6]">Komunitas</span>
                   <svg
                     className="absolute -bottom-1.5 left-0 w-full h-2.5"
                     viewBox="0 0 300 10"
@@ -280,8 +280,8 @@ function LandingPage({ user }) {
               </h1>
 
               <p className="text-base sm:text-lg text-[#6B7280] leading-relaxed max-w-[540px] mb-8">
-                Tempat creator berbagi workflow, insight, dan pengalaman. Temukan ide,
-                bangun koneksi, dan tumbuh bareng komunitas kreatif.
+                Ruang modern buat berbagi ide, pengalaman, dan pengetahuan dari berbagai
+                kalangan. Temukan inspirasi, bangun koneksi, dan tumbuh bareng komunitas.
               </p>
 
               <div className="flex flex-wrap items-center gap-3 mb-10">
@@ -301,7 +301,7 @@ function LandingPage({ user }) {
               {/* Engagement stats */}
               <div className="grid grid-cols-3 gap-4 max-w-[440px]">
                 {[
-                  { value: '10K+', label: 'Creator aktif' },
+                  { value: '10K+', label: 'Anggota aktif' },
                   { value: '48K', label: 'Insight dibagikan' },
                   { value: '2.1M', label: 'Interaksi bulan ini' },
                 ].map((s) => (
@@ -332,7 +332,7 @@ function LandingPage({ user }) {
                   <span className="text-xs font-semibold uppercase tracking-wider">Trending sekarang</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight">
-                  Insight yang lagi dibicarain creator
+                  Insight yang lagi dibicarain komunitas
                 </h2>
               </div>
               <Link
@@ -357,10 +357,10 @@ function LandingPage({ user }) {
                 },
                 {
                   rank: '02',
-                  title: '5 prompt AI buat speedrun riset konten',
+                  title: '5 prompt AI buat speedrun riset tugas kuliah',
                   author: 'Rizky P.',
-                  role: 'Content Creator',
-                  tags: ['#ai', '#workflow'],
+                  role: 'Mahasiswa',
+                  tags: ['#ai', '#belajar'],
                   likes: '1.9K',
                   comments: '142',
                 },
@@ -369,7 +369,7 @@ function LandingPage({ user }) {
                   title: 'Template Notion yang bikin proyek kelar tepat waktu',
                   author: 'Maya L.',
                   role: 'Product Manager',
-                  tags: ['#productivity', '#tools'],
+                  tags: ['#produktivitas', '#tools'],
                   likes: '1.6K',
                   comments: '98',
                 },
@@ -426,10 +426,10 @@ function LandingPage({ user }) {
               <div>
                 <div className="inline-flex items-center gap-2 text-[#3B82F6] mb-2">
                   <Icon name="users" className="w-4 h-4" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">Creator pilihan</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider">Anggota pilihan</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight">
-                  Ikuti creator yang lagi tumbuh
+                  Orang yang lagi aktif berbagi
                 </h2>
               </div>
               <Link
@@ -444,9 +444,9 @@ function LandingPage({ user }) {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { name: 'Sarah Kim', role: 'UI Designer', followers: '12.4K', color: 'from-blue-400 to-blue-600', tag: 'Design' },
-                { name: 'Rizky P.', role: 'Content Creator', followers: '8.7K', color: 'from-amber-400 to-orange-500', tag: 'Creator' },
-                { name: 'Maya L.', role: 'Product Manager', followers: '6.2K', color: 'from-emerald-400 to-teal-500', tag: 'Product' },
-                { name: 'Dimas A.', role: 'Frontend Dev', followers: '9.1K', color: 'from-violet-400 to-purple-600', tag: 'Engineering' },
+                { name: 'Rizky P.', role: 'Mahasiswa', followers: '8.7K', color: 'from-amber-400 to-orange-500', tag: 'Pendidikan' },
+                { name: 'Maya L.', role: 'Product Manager', followers: '6.2K', color: 'from-emerald-400 to-teal-500', tag: 'Produk' },
+                { name: 'Dimas A.', role: 'Frontend Dev', followers: '9.1K', color: 'from-violet-400 to-purple-600', tag: 'Programming' },
               ].map((creator) => (
                 <div
                   key={creator.name}
@@ -468,7 +468,7 @@ function LandingPage({ user }) {
                       {creator.tag}
                     </span>
                     <div className="text-xs text-[#6B7280]">
-                      <span className="font-semibold text-[#111827]">{creator.followers}</span> followers
+                      <span className="font-semibold text-[#111827]">{creator.followers}</span> pengikut
                     </div>
                   </div>
                   <button className="w-full px-3 py-2 rounded-lg bg-[#F3F4F6] group-hover:bg-[#3B82F6] text-xs font-semibold text-[#111827] group-hover:text-white transition-colors">
@@ -488,14 +488,14 @@ function LandingPage({ user }) {
             <div className="max-w-[680px] mb-12">
               <div className="inline-flex items-center gap-2 text-[#3B82F6] mb-2">
                 <Icon name="sparkles" className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Dibangun untuk creator</span>
+                <span className="text-xs font-semibold uppercase tracking-wider">Untuk semua orang</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-[#111827] tracking-tight leading-tight mb-4">
                 Tempat berbagi yang terasa seperti punya sendiri
               </h2>
               <p className="text-base text-[#6B7280] leading-relaxed">
-                Skillio bukan platform kursus atau marketplace. Ini ruang buat creator saling bertukar
-                insight, workflow, dan pengalaman nyata.
+                Skillio bukan platform kursus atau marketplace. Ini ruang buat siapa saja saling
+                bertukar insight, pengalaman, dan pengetahuan dari berbagai bidang.
               </p>
             </div>
 
@@ -504,12 +504,12 @@ function LandingPage({ user }) {
                 {
                   icon: 'pen',
                   title: 'Tulis insight, bukan kursus',
-                  desc: 'Format feed yang ringan. Bagikan pemikiran, workflow, atau studi kasus tanpa harus bikin modul panjang.',
+                  desc: 'Format feed yang ringan. Bagikan pemikiran, pengalaman, atau studi kasus tanpa harus bikin modul panjang.',
                 },
                 {
                   icon: 'network',
                   title: 'Networking natural',
-                  desc: 'Follow creator yang relevan. Diskusi lewat komentar. Bangun koneksi tanpa rasa formal.',
+                  desc: 'Ikuti orang yang relevan. Diskusi lewat komentar. Bangun koneksi tanpa rasa formal.',
                 },
                 {
                   icon: 'trending',
@@ -519,7 +519,7 @@ function LandingPage({ user }) {
                 {
                   icon: 'bookmark',
                   title: 'Koleksi personal',
-                  desc: 'Simpan insight ke koleksi pribadi. Bangun second brain dari ide creator yang kamu respect.',
+                  desc: 'Simpan insight ke koleksi pribadi. Bangun second brain dari ide orang yang kamu respect.',
                 },
                 {
                   icon: 'message',
@@ -561,24 +561,24 @@ function LandingPage({ user }) {
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-xs font-medium text-white mb-6">
                     <Icon name="sparkles" className="w-3.5 h-3.5" />
-                    Skillio+ · Creator tools
+                    Skillio+ · Productivity tools
                   </div>
 
                   <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-tight mb-4">
-                    Tools tambahan biar kamu lebih produktif bikin insight
+                    Tools tambahan biar kamu lebih produktif berbagi insight
                   </h2>
 
                   <p className="text-base text-[#9CA3AF] leading-relaxed mb-8 max-w-[520px]">
                     Skillio+ bukan paywall konten. Semua feed tetap bisa diakses bebas. Ini set tools
-                    opsional buat creator yang mau bikin, edit, dan distribusi insight lebih cepat.
+                    opsional buat siapa saja yang mau bikin, edit, dan distribusi insight lebih cepat.
                   </p>
 
                   <ul className="space-y-3 mb-8">
                     {[
                       'AI assist untuk summarize, outline, dan improve tulisan',
-                      'Analytics detail per insight — reach, retention, konversi follower',
+                      'Analytics detail per insight — reach, retention, pertumbuhan pengikut',
                       'Scheduled posting dan draft yang ter-sinkron lintas device',
-                      'Badge creator verified untuk kredibilitas di feed',
+                      'Badge verified untuk kredibilitas di feed',
                     ].map((perk) => (
                       <li key={perk} className="flex items-start gap-3 text-sm text-white/90">
                         <span className="w-5 h-5 rounded-full bg-[#3B82F6]/20 text-[#3B82F6] flex items-center justify-center shrink-0 mt-0.5">
@@ -610,7 +610,7 @@ function LandingPage({ user }) {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <div className="text-xs text-[#9CA3AF]">Performa 7 hari</div>
-                        <div className="text-lg font-semibold text-white">Analytics Creator</div>
+                        <div className="text-lg font-semibold text-white">Analytics Insight</div>
                       </div>
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500/15 text-emerald-300 text-[11px] font-semibold">
                         <Icon name="trending" className="w-3 h-3" /> +24%
@@ -635,7 +635,7 @@ function LandingPage({ user }) {
                       {[
                         { label: 'Reach', value: '48.2K' },
                         { label: 'Engagement', value: '7.9%' },
-                        { label: 'Follower baru', value: '+312' },
+                        { label: 'Pengikut baru', value: '+312' },
                       ].map((m) => (
                         <div key={m.label}>
                           <div className="text-xs text-[#9CA3AF]">{m.label}</div>
@@ -657,7 +657,7 @@ function LandingPage({ user }) {
           <div className="max-w-[1200px] mx-auto">
             <div className="text-center max-w-[680px] mx-auto mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-[#111827] tracking-tight leading-tight mb-4">
-                Creator yang udah nemuin rumahnya di Skillio
+                Orang yang udah nemuin rumahnya di Skillio
               </h2>
               <p className="text-base text-[#6B7280]">
                 Suara dari komunitas tentang cara mereka tumbuh dengan berbagi.
@@ -669,19 +669,19 @@ function LandingPage({ user }) {
                 {
                   name: 'Aurel M.',
                   role: 'Brand Designer',
-                  text: 'Di Skillio aku nggak ngerasa harus jadi guru. Cuma share workflow harian, eh malah dapet banyak follower dan kolaborasi.',
+                  text: 'Di Skillio aku nggak ngerasa harus jadi guru. Cuma share workflow harian, eh malah dapet banyak koneksi dan kolaborasi.',
                   color: 'from-blue-400 to-blue-600',
                 },
                 {
                   name: 'Bintang W.',
-                  role: 'Indie Developer',
+                  role: 'Mahasiswa Informatika',
                   text: 'Format feed-nya pas. Gak harus bikin kursus panjang, tapi tetap bisa bagi insight yang berbobot.',
                   color: 'from-violet-400 to-purple-600',
                 },
                 {
                   name: 'Kayla R.',
-                  role: 'Content Strategist',
-                  text: 'Analytics Skillio+ bikin aku lebih ngerti konten mana yang benar-benar resonate. Worth it banget buat creator serius.',
+                  role: 'Marketing Lead',
+                  text: 'Analytics Skillio+ bikin aku lebih ngerti konten mana yang benar-benar resonate. Worth it banget buat yang serius.',
                   color: 'from-emerald-400 to-teal-500',
                 },
               ].map((t) => (
@@ -730,10 +730,10 @@ function LandingPage({ user }) {
                 </div>
 
                 <h2 className="text-3xl sm:text-4xl font-bold text-[#111827] tracking-tight leading-tight mb-4">
-                  Bangun audiens kreatifmu, mulai hari ini
+                  Bangun audiens kamu, mulai hari ini
                 </h2>
                 <p className="text-base text-[#6B7280] leading-relaxed max-w-[560px] mx-auto mb-8">
-                  Gabung ke komunitas creator yang saling bantu. Posting pertama kamu bisa ditulis
+                  Gabung ke komunitas yang saling bantu. Posting pertama kamu bisa ditulis
                   dalam 5 menit.
                 </p>
 
@@ -766,7 +766,7 @@ function LandingPage({ user }) {
                   <img src="/logo.png" alt="Skillio" className="h-10 w-auto object-contain" />
                 </div>
                 <p className="text-sm text-[#6B7280] leading-relaxed max-w-[320px] mb-5">
-                  Creator social ecosystem untuk berbagi insight, workflow, dan pengalaman.
+                  Platform berbagi insight, pengalaman, dan inspirasi untuk semua kalangan.
                   Dibangun untuk komunitas, bukan algoritma.
                 </p>
                 <div className="flex gap-2">
@@ -783,8 +783,8 @@ function LandingPage({ user }) {
               </div>
 
               {[
-                { title: 'Produk', items: ['Feed', 'Trending', 'Creator', 'Skillio+'] },
-                { title: 'Komunitas', items: ['Jelajahi', 'Topik', 'Creator pilihan', 'Panduan'] },
+                { title: 'Produk', items: ['Feed', 'Trending', 'Anggota', 'Skillio+'] },
+                { title: 'Komunitas', items: ['Jelajahi', 'Topik', 'Anggota pilihan', 'Panduan'] },
                 { title: 'Perusahaan', items: ['Tentang', 'Blog', 'Kontak', 'Karir'] },
               ].map((col) => (
                 <div key={col.title}>
@@ -809,7 +809,7 @@ function LandingPage({ user }) {
 
             <div className="pt-6 border-t border-[#E5E7EB] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <p className="text-xs text-[#6B7280]">
-                © {new Date().getFullYear()} Skillio. Dibuat untuk creator.
+                © {new Date().getFullYear()} Skillio. Dibuat untuk komunitas.
               </p>
               <div className="flex gap-5 text-xs text-[#6B7280]">
                 <a href="#" className="hover:text-[#3B82F6] transition-colors">Privasi</a>

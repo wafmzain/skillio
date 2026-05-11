@@ -220,7 +220,7 @@ function Home() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Cari insight, creator, atau topik..."
+                    placeholder="Cari insight, orang, atau topik..."
                     className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-[#E5E7EB] rounded-xl outline-none placeholder:text-[#9CA3AF] focus:border-[#3B82F6] focus:ring-4 focus:ring-blue-500/10 transition-all"
                   />
                   {searchQuery && (
@@ -424,8 +424,8 @@ function UserMiniCard({ user, stats }) {
       <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-[#FAFAFA] border border-[#F3F4F6]">
         {[
           { label: 'Posts', value: stats.posts },
-          { label: 'Followers', value: stats.followers },
-          { label: 'Following', value: stats.following },
+          { label: 'Pengikut', value: stats.followers },
+          { label: 'Mengikuti', value: stats.following },
         ].map((s) => (
           <div key={s.label} className="text-center">
             <div className="text-base font-semibold text-[#111827]">
@@ -462,7 +462,7 @@ function TrendingCreatorsCard({ creators, currentUser }) {
           <div className="w-7 h-7 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6] flex items-center justify-center">
             <Icon name="users" className="w-4 h-4" />
           </div>
-          <h3 className="text-sm font-semibold text-[#111827]">Creator rekomendasi</h3>
+          <h3 className="text-sm font-semibold text-[#111827]">Rekomendasi untuk kamu</h3>
         </div>
         <Link to="/explore" className="text-xs text-[#3B82F6] font-medium hover:text-[#2563EB]">
           Semua
@@ -470,7 +470,7 @@ function TrendingCreatorsCard({ creators, currentUser }) {
       </div>
 
       {creators.length === 0 ? (
-        <p className="text-xs text-[#6B7280] text-center py-4">Belum ada creator</p>
+        <p className="text-xs text-[#6B7280] text-center py-4">Belum ada anggota</p>
       ) : (
         <div className="space-y-3">
           {creators.map((c) => (
@@ -501,7 +501,7 @@ function TrendingCreatorsCard({ creators, currentUser }) {
                     )}
                   </div>
                   <div className="text-[11px] text-[#6B7280] truncate">
-                    {formatViews(c.followers_count)} followers
+                    {formatViews(c.followers_count)} pengikut
                   </div>
                 </div>
               </Link>
@@ -561,9 +561,9 @@ function SkillioPlusCard() {
           <Icon name="sparkles" className="w-3 h-3" />
           Skillio+
         </div>
-        <h4 className="text-base font-semibold mb-1.5">Unlock creator tools</h4>
+        <h4 className="text-base font-semibold mb-1.5">Unlock productivity tools</h4>
         <p className="text-xs text-white/70 leading-relaxed mb-4">
-          AI assist, analytics detail, scheduled posting, dan badge verified untuk creator serius.
+          AI assist, analytics detail, scheduled posting, dan badge verified untuk kamu yang serius.
         </p>
         <Link to="/premium">
           <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-[#111827] bg-white hover:bg-[#F3F4F6] transition-colors">

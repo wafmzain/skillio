@@ -26,7 +26,7 @@ function LandingNavbar() {
   const menuItems = [
     { name: 'Jelajahi', path: '/home' },
     { name: 'Trending', path: '/explore' },
-    { name: 'Creator', path: '/home#creators' },
+    { name: 'Komunitas', path: '/home#creators' },
     { name: 'Skillio+', path: '/premium' },
   ]
 

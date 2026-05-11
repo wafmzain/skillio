@@ -228,17 +228,17 @@ function Profile() {
   const badges = useMemo(() => {
     if (!profile) return []
     const list = []
-    if (profile.is_premium) list.push({ key: 'premium', label: 'Skillio+ Creator', icon: 'sparkles', accent: true })
+    if (profile.is_premium) list.push({ key: 'premium', label: 'Skillio+ Member', icon: 'sparkles', accent: true })
 
     const hasTrending = posts.some((p) => (p.trending_score || 0) >= 50)
-    if (hasTrending) list.push({ key: 'trending', label: 'Trending Creator', icon: 'flame' })
+    if (hasTrending) list.push({ key: 'trending', label: 'Trending Author', icon: 'flame' })
 
     const topInsight = posts.some((p) => (p.likes_count || 0) >= 100)
     if (topInsight) list.push({ key: 'top', label: 'Top Insight', icon: 'star' })
 
-    // Early creator if profile.created_at before Jan 1, 2026 (just a visual heuristic — adapt later)
+    // Early member if profile.created_at before Jan 1, 2026 (visual heuristic)
     if (profile.created_at && new Date(profile.created_at) < new Date('2026-01-01')) {
-      list.push({ key: 'early', label: 'Early Creator', icon: 'badge' })
+      list.push({ key: 'early', label: 'Early Member', icon: 'badge' })
     }
     return list
   }, [profile, posts])
@@ -522,8 +522,8 @@ function Profile() {
               <StatCell label="Views" value={stats.views} icon="eye" />
               <StatCell label="Likes" value={stats.likes} icon="heart" />
               <StatCell label="Bookmarks" value={stats.bookmarks} icon="bookmark" />
-              <StatCell label="Followers" value={stats.followers} icon="users" accent />
-              <StatCell label="Following" value={stats.following} icon="users" />
+              <StatCell label="Pengikut" value={stats.followers} icon="users" accent />
+              <StatCell label="Mengikuti" value={stats.following} icon="users" />
             </div>
           </motion.div>
 
@@ -666,18 +666,18 @@ function AboutTab({ profile, stats, topCategory }) {
       <section className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
         <h3 className="text-sm font-semibold text-[#111827] mb-3 flex items-center gap-2">
           <Icon name="info" className="w-4 h-4 text-[#3B82F6]" />
-          Tentang creator
+          Tentang
         </h3>
         <p className="text-sm text-[#111827] leading-relaxed">
           {profile.bio ||
-            'Creator ini belum menuliskan bio. Ikuti untuk dapatkan update insight terbaru.'}
+            'Orang ini belum menuliskan bio. Ikuti untuk dapatkan update insight terbaru.'}
         </p>
       </section>
 
       <section className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
         <h3 className="text-sm font-semibold text-[#111827] mb-4 flex items-center gap-2">
           <Icon name="chart" className="w-4 h-4 text-[#3B82F6]" />
-          Creator highlights
+          Ringkasan aktivitas
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
@@ -685,8 +685,8 @@ function AboutTab({ profile, stats, topCategory }) {
             { label: 'Total views', value: stats.views, icon: 'eye' },
             { label: 'Total likes', value: stats.likes, icon: 'heart' },
             { label: 'Total bookmarks', value: stats.bookmarks, icon: 'bookmark' },
-            { label: 'Followers', value: stats.followers, icon: 'users' },
-            { label: 'Niche utama', value: topCategory?.name || '—', icon: 'sparkles', isString: true },
+            { label: 'Pengikut', value: stats.followers, icon: 'users' },
+            { label: 'Kategori utama', value: topCategory?.name || '—', icon: 'sparkles', isString: true },
           ].map((s) => (
             <div
               key={s.label}
@@ -964,8 +964,8 @@ function EmptyState({ isOwnProfile, tab }) {
       icon: 'pen',
       title: isOwnProfile ? 'Bagikan Insight Pertamamu' : 'Belum ada insight',
       subtitle: isOwnProfile
-        ? 'Mulai bangun personal brand creator-mu di Skillio.'
-        : 'Creator ini belum membagikan insight. Follow untuk dapat update terbaru.',
+        ? 'Mulai bangun kehadiranmu di Skillio.'
+        : 'Orang ini belum membagikan insight. Ikuti untuk dapat update terbaru.',
     }
   })()
 

@@ -140,7 +140,7 @@ function FollowButton({
 
       {showCount && (
         <span className="text-sm text-[#6B7280] font-medium">
-          {followersCount} {followersCount === 1 ? 'follower' : 'followers'}
+          {followersCount} {followersCount === 1 ? 'pengikut' : 'pengikut'}
         </span>
       )}
     </div>

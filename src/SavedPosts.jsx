@@ -317,7 +317,7 @@ function SavedPosts() {
                 Tersimpan
               </h1>
               <p className="text-base text-[#6B7280] leading-relaxed max-w-xl">
-                Kumpulan insight dan inspirasi creator yang kamu simpan.
+                Kumpulan insight dan inspirasi yang kamu simpan.
               </p>
             </div>
 
@@ -335,7 +335,7 @@ function SavedPosts() {
                 icon="hash"
               />
               <StatChip
-                label="Creator"
+                label="Orang"
                 value={favoriteCreators.length}
                 icon="users"
               />
@@ -599,8 +599,8 @@ function SavedPostItem({ post, currentUser, onRemove, onShare }) {
             <Link
               to={`/u/${post.profiles.username}`}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-[#6B7280] hover:text-[#3B82F6] hover:bg-[#3B82F6]/10 transition-colors"
-              title="Profil creator"
-              aria-label="Buka profil creator"
+              title="Profil pengguna"
+              aria-label="Buka profil pengguna"
             >
               <Icon name="user" className="w-4 h-4" />
             </Link>
@@ -688,12 +688,12 @@ function FavoriteCreatorsCard({ creators, currentUser }) {
         <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6]">
           <Icon name="users" className="w-4 h-4" />
         </span>
-        <h3 className="text-sm font-semibold text-[#111827]">Creator favorit</h3>
+        <h3 className="text-sm font-semibold text-[#111827]">Orang favorit</h3>
       </div>
 
       {creators.length === 0 ? (
         <p className="text-xs text-[#6B7280] text-center py-4">
-          Simpan insight untuk mulai membangun daftar creator favoritmu.
+          Simpan insight untuk mulai membangun daftar favoritmu.
         </p>
       ) : (
         <div className="space-y-3">
@@ -900,7 +900,7 @@ function EmptyState() {
           <Link to="/home">
             <button className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] shadow-sm shadow-blue-500/20 transition-colors">
               <Icon name="users" className="w-4 h-4" />
-              Jelajahi Creator
+              Jelajahi Komunitas
               <Icon name="arrow-right" className="w-4 h-4" />
             </button>
           </Link>

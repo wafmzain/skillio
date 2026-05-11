@@ -249,7 +249,7 @@ function Register() {
                   Gabung Skillio
                 </h1>
                 <p className="text-sm text-[#6B7280]">
-                  Buat akun creator dan mulai bagikan insight ke komunitas.
+                  Buat akun dan mulai bagikan insight, pengalaman, atau ide ke komunitas.
                 </p>
               </div>
 
@@ -464,7 +464,7 @@ function Register() {
             </motion.div>
 
             <footer className="mt-8 text-[11px] text-[#9CA3AF] text-center">
-              © {new Date().getFullYear()} Skillio · Creator social ecosystem
+              © {new Date().getFullYear()} Skillio · Tempat berbagi insight & inspirasi
             </footer>
           </div>
         </div>

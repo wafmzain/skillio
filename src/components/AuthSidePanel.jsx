@@ -36,15 +36,15 @@ function AuthSidePanel({ mode = 'login' }) {
   const copy = {
     login: {
       label: 'Welcome back',
-      title: 'Lanjutkan berbagi insight kreatifmu',
+      title: 'Lanjutkan berbagi insight & inspirasimu',
       subtitle:
-        'Masuk untuk akses feed creator, koleksi insight, dan tools yang sudah kamu atur.',
+        'Masuk untuk akses feed, koleksi insight, dan tools yang sudah kamu atur.',
     },
     register: {
       label: 'Join the community',
-      title: 'Bangun identitas creator kamu di Skillio',
+      title: 'Gabung komunitas berbagi insight di Skillio',
       subtitle:
-        'Gabung komunitas creator untuk berbagi workflow, pengalaman, dan tumbuh bareng.',
+        'Gabung komunitas untuk berbagi ide, pengalaman, dan pengetahuan bareng.',
     },
   }[mode]
 
@@ -220,7 +220,7 @@ function AuthSidePanel({ mode = 'login' }) {
             </div>
             <div>
               <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Creator aktif
+                Anggota aktif
               </div>
               <div className="text-xs font-semibold text-white">2.4K online</div>
             </div>
@@ -236,7 +236,7 @@ function AuthSidePanel({ mode = 'login' }) {
         >
           <div className="grid grid-cols-3 gap-5 mb-6">
             {[
-              { value: '10K+', label: 'Creator aktif' },
+              { value: '10K+', label: 'Anggota aktif' },
               { value: '48K', label: 'Insight dibagi' },
               { value: '2.1M', label: 'Interaksi/bln' },
             ].map((s) => (
@@ -257,9 +257,9 @@ function AuthSidePanel({ mode = 'login' }) {
 
           <ul className="space-y-2">
             {[
-              'Feed creator gratis tanpa paywall konten',
+              'Feed komunitas gratis tanpa paywall konten',
               'Diskusi bermakna tanpa noise & spam',
-              'Discovery organik untuk creator yang berbagi',
+              'Discovery organik untuk yang suka berbagi',
             ].map((t) => (
               <li
                 key={t}

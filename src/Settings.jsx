@@ -362,13 +362,13 @@ function Settings() {
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-semibold mb-3">
                 <Icon name="user" className="w-3.5 h-3.5" />
-                Creator Profile
+                Profil & Identitas
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight leading-tight mb-1">
                 Edit Profil
               </h1>
               <p className="text-sm text-[#6B7280] max-w-xl">
-                Atur identitas creator kamu — nama, username, bio, dan foto profil yang muncul di
+                Atur identitas kamu — nama, username, bio, dan foto profil yang muncul di
                 Skillio.
               </p>
             </div>
@@ -486,7 +486,7 @@ function Settings() {
             {/* Identity */}
             <SectionCard
               icon="user"
-              title="Identitas creator"
+              title="Identitas"
               description="Nama dan username muncul di feed, profil, dan komentar kamu."
             >
               <div className="space-y-4">
@@ -551,7 +551,7 @@ function Settings() {
                   label="Bio"
                   icon="align"
                   hint={`${bio.length}/${BIO_MAX}`}
-                  description="Ceritakan peran, niche, atau fokus kreatif kamu."
+                  description="Ceritakan peran, minat, atau fokus kamu."
                 >
                   <textarea
                     value={bio}
@@ -795,7 +795,7 @@ function ProfilePreview({ name, username, bio, avatarUrl, website, isPremium, in
         </p>
 
         <p className="text-xs text-[#111827] leading-relaxed mt-3 min-h-[32px]">
-          {bio || 'Bio kamu akan muncul di sini — ceritakan niche dan fokus kreatif kamu.'}
+          {bio || 'Bio kamu akan muncul di sini — ceritakan minat dan fokus kamu.'}
         </p>
 
         {website && (
@@ -816,7 +816,7 @@ function ProfilePreview({ name, username, bio, avatarUrl, website, isPremium, in
 
 function TipsCard() {
   const tips = [
-    'Bio yang jelas membantu audience memahami nichemu dalam 3 detik.',
+    'Bio yang jelas membantu audiens memahami fokusmu dalam 3 detik.',
     'Foto profil persegi 400×400 terlihat paling tajam di semua ukuran.',
     'Gunakan username yang mudah diingat — sama dengan handle di platform lain.',
     'Tambahkan website untuk drive traffic ke portfolio atau newsletter kamu.',
@@ -827,7 +827,7 @@ function TipsCard() {
         <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6]">
           <Icon name="sparkles" className="w-4 h-4" />
         </span>
-        <h3 className="text-sm font-semibold text-[#111827]">Tips creator</h3>
+        <h3 className="text-sm font-semibold text-[#111827]">Tips</h3>
       </div>
       <ul className="space-y-2">
         {tips.map((t) => (

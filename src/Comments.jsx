@@ -422,7 +422,7 @@ function Comments({ postId }) {
               Login untuk berdiskusi
             </h3>
             <p className="text-xs text-[#6B7280] mb-4 max-w-sm mx-auto">
-              Bergabung untuk berbagi respon dan terhubung dengan creator lain.
+              Bergabung untuk berbagi respon dan terhubung dengan anggota lain.
             </p>
             <Link to="/login">
               <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] shadow-sm shadow-blue-500/20 transition-colors">

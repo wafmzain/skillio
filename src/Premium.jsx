@@ -71,14 +71,14 @@ const FEATURES = [
   },
   {
     icon: 'chart',
-    title: 'Creator Analytics',
+    title: 'Analytics Insight',
     description:
-      'Lihat reach, retention, dan konversi follower per insight. Pahami konten mana yang benar-benar resonate.',
+      'Lihat reach, retention, dan pertumbuhan pengikut per insight. Pahami konten mana yang benar-benar resonate.',
     tag: 'Insights',
   },
   {
     icon: 'badge',
-    title: 'Premium Creator Badge',
+    title: 'Badge Skillio+ Verified',
     description:
       'Badge Skillio+ di profil dan setiap insight kamu. Tingkatkan kredibilitas di feed dan discovery.',
     tag: 'Identity',
@@ -99,9 +99,9 @@ const FEATURES = [
   },
   {
     icon: 'user-plus',
-    title: 'Enhanced Creator Profile',
+    title: 'Profil yang Lebih Kaya',
     description:
-      'Layout profil yang lebih kaya, highlight insight terbaik, dan featured work untuk bangun personal brand.',
+      'Layout profil yang lebih lengkap, highlight insight terbaik, dan featured work untuk bangun personal brand.',
     tag: 'Branding',
   },
 ]
@@ -109,17 +109,17 @@ const FEATURES = [
 const BENEFITS = [
   {
     icon: 'zap',
-    title: 'Tingkatkan produktivitas creator',
+    title: 'Tingkatkan produktivitas harian',
     desc: 'Workflow lebih cepat dengan AI assist, draft sync, dan scheduled posting.',
   },
   {
     icon: 'user-plus',
     title: 'Bangun personal brand lebih cepat',
-    desc: 'Badge verified, profil enhanced, dan featured placement di discovery.',
+    desc: 'Badge verified, profil lebih lengkap, dan featured placement di discovery.',
   },
   {
     icon: 'chart',
-    title: 'Analisis engagement creator',
+    title: 'Analisis engagement insight',
     desc: 'Dashboard analytics real-time untuk memahami performa setiap insight.',
   },
   {
@@ -262,17 +262,17 @@ function Premium() {
             >
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-semibold mb-5">
                 <Icon name="sparkles" className="w-3.5 h-3.5" />
-                Skillio+ · Creator productivity
+                Skillio+ · Productivity tools
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#111827] tracking-tight leading-[1.1] mb-5">
-                Creator Tools untuk{' '}
+                Tools untuk{' '}
                 <span className="text-[#3B82F6]">Berkembang Lebih Cepat</span>
               </h1>
 
               <p className="text-base sm:text-lg text-[#6B7280] leading-relaxed max-w-[540px] mb-8">
-                Akses fitur premium untuk membantu creator membangun audience, meningkatkan
-                produktivitas, dan berkembang lebih cepat di Skillio.
+                Akses fitur premium untuk membantu kamu membangun audiens, meningkatkan
+                produktivitas, dan berbagi insight lebih efektif di Skillio.
               </p>
 
               {/* Primary CTA area */}
@@ -343,14 +343,14 @@ function Premium() {
             <div className="inline-flex items-center gap-2 text-[#3B82F6] mb-2">
               <Icon name="sparkles" className="w-4 h-4" />
               <span className="text-xs font-semibold uppercase tracking-wider">
-                Creator tools
+                Productivity tools
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight leading-tight mb-3">
-              Dibangun untuk creator yang ingin serius
+              Dibangun untuk kamu yang serius berbagi
             </h2>
             <p className="text-base text-[#6B7280] leading-relaxed">
-              Skillio+ adalah set tools produktivitas creator — bukan paywall konten. Semua insight
+              Skillio+ adalah set tools produktivitas — bukan paywall konten. Semua insight
               di feed tetap bisa diakses bebas.
             </p>
           </div>
@@ -406,7 +406,7 @@ function Premium() {
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-xs font-medium text-white mb-5">
                   <Icon name="chart" className="w-3.5 h-3.5" />
-                  Creator Analytics
+                  Analytics Insight
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight mb-4">
                   Pahami audiens, optimize insight, tumbuh lebih sengaja
@@ -414,15 +414,15 @@ function Premium() {
                 <p className="text-base text-white/70 leading-relaxed mb-6 max-w-[520px]">
                   Dashboard analytics real-time untuk setiap insight yang kamu publish. Lihat
                   performa, pola engagement, dan temukan apa yang benar-benar resonate dengan
-                  audience kamu.
+                  audiens kamu.
                 </p>
 
                 <ul className="space-y-3">
                   {[
-                    'Reach, retention, dan konversi per insight',
-                    'Pola waktu aktif audience kamu',
+                    'Reach, retention, dan pertumbuhan pengikut per insight',
+                    'Pola waktu aktif audiens kamu',
                     'Topik yang paling banyak di-bookmark',
-                    'Growth follower mingguan dan bulanan',
+                    'Pertumbuhan pengikut mingguan dan bulanan',
                   ].map((t) => (
                     <li key={t} className="flex items-start gap-3 text-sm text-white/90">
                       <span className="w-5 h-5 rounded-full bg-[#3B82F6]/20 text-[#3B82F6] flex items-center justify-center shrink-0 mt-0.5">
@@ -456,7 +456,7 @@ function Premium() {
               Tools yang terasa seperti partner pertumbuhan
             </h2>
             <p className="text-base text-[#6B7280] leading-relaxed">
-              Setiap fitur dirancang untuk satu hal: bantu kamu build audience dan bikin insight
+              Setiap fitur dirancang untuk satu hal: bantu kamu bangun audiens dan bikin insight
               yang lebih tajam.
             </p>
           </div>
@@ -493,7 +493,7 @@ function Premium() {
               Harga sederhana
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight leading-tight">
-              Satu paket, semua creator tools
+              Satu paket, semua tools produktivitas
             </h2>
           </div>
 
@@ -517,10 +517,10 @@ function Premium() {
 
               <ul className="space-y-3 mb-7">
                 {[
-                  'Akses penuh ke feed creator',
+                  'Akses penuh ke feed komunitas',
                   'Posting insight tanpa batas',
                   'Follow, like, komentar, bookmark',
-                  'Discovery trending creator',
+                  'Discovery insight trending',
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-2.5 text-sm text-[#111827]">
                     <span className="w-4 h-4 rounded-full bg-[#F3F4F6] text-[#6B7280] flex items-center justify-center shrink-0 mt-0.5">
@@ -549,11 +549,11 @@ function Premium() {
                 <h3 className="text-lg font-semibold text-[#111827]">Skillio+</h3>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#3B82F6]/10 text-[#3B82F6] text-[10px] font-semibold">
                   <Icon name="sparkles" className="w-3 h-3" />
-                  Creator tools
+                  Productivity tools
                 </span>
               </div>
               <p className="text-sm text-[#6B7280] mb-5">
-                Tools produktivitas untuk creator yang ingin tumbuh lebih cepat.
+                Tools produktivitas untuk kamu yang ingin tumbuh lebih cepat.
               </p>
 
               <div className="mb-6">
@@ -564,10 +564,10 @@ function Premium() {
               <ul className="space-y-3 mb-7">
                 {[
                   'AI Summary tanpa batas',
-                  'Creator analytics lengkap',
+                  'Analytics insight lengkap',
                   'Badge Skillio+ verified',
                   'Early access fitur baru',
-                  'Enhanced creator profile',
+                  'Profil yang lebih kaya',
                   'Prioritas di discovery',
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-2.5 text-sm text-[#111827]">
@@ -621,7 +621,7 @@ function Premium() {
             {[
               {
                 q: 'Apakah konten di feed dikunci kalau saya tidak upgrade?',
-                a: 'Tidak. Semua insight yang di-post creator bisa diakses bebas di feed. Skillio+ fokus ke tools produktivitas untuk creator, bukan paywall konten.',
+                a: 'Tidak. Semua insight yang di-post bisa diakses bebas di feed. Skillio+ fokus ke tools produktivitas, bukan paywall konten.',
               },
               {
                 q: 'Bisa batal kapan saja?',
@@ -633,7 +633,7 @@ function Premium() {
               },
               {
                 q: 'Apakah ada paket tahunan?',
-                a: 'Saat ini kami fokus ke paket bulanan biar creator bisa mulai tanpa komitmen besar. Paket tahunan akan hadir menyusul.',
+                a: 'Saat ini kami fokus ke paket bulanan biar kamu bisa mulai tanpa komitmen besar. Paket tahunan akan hadir menyusul.',
               },
             ].map((item) => (
               <FAQItem key={item.q} q={item.q} a={item.a} />
@@ -668,7 +668,7 @@ function MembershipActiveCard({ memberSince, activeUntil, daysLeft, onCancel }) 
         </div>
         <span className="inline-flex items-center gap-1.5 text-xs text-[#6B7280]">
           <Icon name="badge" className="w-3.5 h-3.5 text-[#3B82F6]" />
-          Creator Pro
+          Member Pro
         </span>
       </div>
 
@@ -825,8 +825,8 @@ function AnalyticsPreview() {
           {[
             { label: 'Total views', value: '148.9K', icon: 'eye', delta: '+18%' },
             { label: 'Engagement', value: '7.9%', icon: 'heart', delta: '+2.1%' },
-            { label: 'Creator reach', value: '82.4K', icon: 'trending', delta: '+24%' },
-            { label: 'New followers', value: '+1.2K', icon: 'users', delta: '+31%' },
+            { label: 'Jangkauan', value: '82.4K', icon: 'trending', delta: '+24%' },
+            { label: 'Pengikut baru', value: '+1.2K', icon: 'users', delta: '+31%' },
           ].map((m) => (
             <div
               key={m.label}

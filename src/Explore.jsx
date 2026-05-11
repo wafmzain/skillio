@@ -226,13 +226,13 @@ function Explore() {
           >
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-semibold mb-4">
               <Icon name="compass" className="w-3.5 h-3.5" />
-              Creator Discovery
+              Discovery
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#111827] tracking-tight leading-tight mb-3">
-              Jelajahi Insight Creator
+              Jelajahi Insight & Inspirasi
             </h1>
             <p className="text-base text-[#6B7280] leading-relaxed">
-              Temukan workflow, pengalaman, dan insight terbaik dari komunitas creator.
+              Temukan ide, pengalaman, dan insight terbaik dari komunitas.
             </p>
           </motion.div>
 
@@ -252,7 +252,7 @@ function Explore() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari insight, creator, workflow..."
+                placeholder="Cari insight, orang, atau topik..."
                 className="w-full pl-11 pr-10 py-3 text-sm bg-white border border-[#E5E7EB] rounded-full outline-none placeholder:text-[#9CA3AF] focus:border-[#3B82F6] focus:ring-4 focus:ring-blue-500/10 transition-all"
               />
               {searchQuery && (
@@ -619,8 +619,8 @@ function CreatorSpotlight({ creators, currentUser }) {
     <section>
       <SectionHeading
         icon="users"
-        title="Creator Trending"
-        subtitle="Creator yang lagi tumbuh di komunitas"
+        title="Anggota Populer"
+        subtitle="Orang yang lagi aktif berbagi di komunitas"
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -658,7 +658,7 @@ function CreatorSpotlight({ creators, currentUser }) {
                   {c.name}
                 </div>
                 <div className="text-[11px] text-[#6B7280] truncate">
-                  @{c.username} · {formatViews(c.followers_count)} followers
+                  @{c.username} · {formatViews(c.followers_count)} pengikut
                 </div>
               </div>
             </Link>
@@ -735,12 +735,12 @@ function RecommendedCreatorsCard({ creators, currentUser }) {
           <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6]">
             <Icon name="users" className="w-4 h-4" />
           </span>
-          <h3 className="text-sm font-semibold text-[#111827]">Creator rekomendasi</h3>
+          <h3 className="text-sm font-semibold text-[#111827]">Rekomendasi orang</h3>
         </div>
       </div>
 
       {creators.length === 0 ? (
-        <p className="text-xs text-[#6B7280] text-center py-4">Belum ada creator</p>
+        <p className="text-xs text-[#6B7280] text-center py-4">Belum ada anggota</p>
       ) : (
         <div className="space-y-3">
           {creators.map((c) => (
@@ -773,7 +773,7 @@ function RecommendedCreatorsCard({ creators, currentUser }) {
                     )}
                   </div>
                   <div className="text-[11px] text-[#6B7280] truncate">
-                    {formatViews(c.followers_count)} followers · {c.posts_count} post
+                    {formatViews(c.followers_count)} pengikut · {c.posts_count} post
                   </div>
                 </div>
               </Link>
@@ -852,7 +852,7 @@ function SkillioPlusCard() {
         </div>
         <h4 className="text-base font-semibold mb-1.5">Discover lebih banyak</h4>
         <p className="text-xs text-white/70 leading-relaxed mb-4">
-          Akses creator analytics, AI assist, dan rekomendasi personal untuk temukan insight yang relevan.
+          Akses analytics insight, AI assist, dan rekomendasi personal untuk temukan insight yang relevan.
         </p>
         <Link to="/premium">
           <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold text-[#111827] bg-white hover:bg-[#F3F4F6] transition-colors">
@@ -901,7 +901,7 @@ function EmptyState({ onReset }) {
         Belum ada insight ditemukan
       </h3>
       <p className="text-sm text-[#6B7280] mb-6 max-w-sm mx-auto">
-        Coba ubah filter atau jelajahi creator lain untuk temukan insight menarik.
+        Coba ubah filter atau jelajahi topik lain untuk temukan insight menarik.
       </p>
       <div className="flex items-center justify-center gap-2 flex-wrap">
         <button
@@ -914,7 +914,7 @@ function EmptyState({ onReset }) {
         <Link to="/home">
           <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] shadow-sm shadow-blue-500/20 transition-colors">
             <Icon name="users" className="w-4 h-4" />
-            Jelajahi Creator
+            Jelajahi Komunitas
             <Icon name="arrow-right" className="w-4 h-4" />
           </button>
         </Link>

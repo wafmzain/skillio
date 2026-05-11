@@ -113,7 +113,7 @@ function Login({ onLoginSuccess }) {
           Masuk ke Skillio
         </h1>
         <p className="text-sm text-[#6B7280]">
-          Lanjutkan perjalanan kreatifmu bareng komunitas creator.
+          Lanjutkan perjalanan berbagi insight bareng komunitas.
         </p>
       </div>
 
@@ -297,7 +297,7 @@ function AuthLayout({ children, mode, topLink, toast }) {
             </motion.div>
 
             <footer className="mt-8 text-[11px] text-[#9CA3AF] text-center">
-              © {new Date().getFullYear()} Skillio · Creator social ecosystem
+              © {new Date().getFullYear()} Skillio · Tempat berbagi insight & inspirasi
             </footer>
           </div>
         </div>

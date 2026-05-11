@@ -396,13 +396,13 @@ function CreatePost() {
             <div className="min-w-0">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-semibold mb-3">
                 <Icon name="pen" className="w-3.5 h-3.5" />
-                Creator Composer
+                Composer Insight
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight leading-tight mb-1">
                 Bagikan Insight Baru
               </h1>
               <p className="text-sm text-[#6B7280] max-w-xl">
-                Tulis workflow, pengalaman, atau insight kreatif untuk komunitas creator Skillio.
+                Tulis ide, pengalaman, atau pengetahuan untuk komunitas Skillio.
               </p>
             </div>
 
