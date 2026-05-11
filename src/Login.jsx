@@ -44,7 +44,6 @@ function Login({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(true)
   const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
   const [toast, setToast] = useState(null)
 
   function showToast(message, tone = 'success') {
@@ -79,21 +78,6 @@ function Login({ onLoginSuccess }) {
     }
   }
 
-  async function handleGoogleLogin() {
-    if (googleLoading) return
-    setGoogleLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin + '/home' },
-      })
-      if (error) throw error
-    } catch (err) {
-      showToast(err.message || 'Login dengan Google gagal', 'error')
-      setGoogleLoading(false)
-    }
-  }
-
   return (
     <AuthLayout
       toast={toast}
@@ -115,27 +99,6 @@ function Login({ onLoginSuccess }) {
         <p className="text-sm text-[#6B7280]">
           Lanjutkan perjalanan berbagi insight bareng komunitas.
         </p>
-      </div>
-
-      <button
-        onClick={handleGoogleLogin}
-        disabled={googleLoading}
-        className="group w-full inline-flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#111827] bg-white border border-[#E5E7EB] hover:border-[#3B82F6]/40 hover:bg-[#F9FAFB] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {googleLoading ? (
-          <span className="w-4 h-4 border-2 border-[#E5E7EB] border-t-[#3B82F6] rounded-full animate-spin" />
-        ) : (
-          <GoogleLogo />
-        )}
-        <span>{googleLoading ? 'Menghubungkan...' : 'Lanjut dengan Google'}</span>
-      </button>
-
-      <div className="flex items-center gap-3 my-5">
-        <div className="flex-1 h-px bg-[#E5E7EB]" />
-        <span className="text-[11px] uppercase tracking-wider text-[#9CA3AF] font-medium">
-          atau email
-        </span>
-        <div className="flex-1 h-px bg-[#E5E7EB]" />
       </div>
 
       <form onSubmit={handleLogin} className="space-y-4">
@@ -320,17 +283,6 @@ function Field({ label, hint, children }) {
       </div>
       {children}
     </div>
-  )
-}
-
-function GoogleLogo() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
-      <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-      <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-      <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.335z"/>
-      <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
-    </svg>
   )
 }
 
