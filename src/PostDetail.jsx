@@ -14,6 +14,12 @@ import { upgradeToPremium } from './services/premiumService'
 import { useAISummary } from './hooks/useAISummary'
 import { usePostView } from './hooks/usePostView'
 import { formatViews } from './utils/formatViews'
+import TrendingCelebration from './components/reputation/TrendingCelebration'
+import AffiliateSection from './components/affiliate/AffiliateSection'
+import AffiliateCard from './components/affiliate/AffiliateCard'
+import { AFFILIATE_SOURCES } from './types/affiliate'
+import { useTopAffiliates } from './hooks/useAffiliates'
+import { grantLikeReceivedPoints, grantBookmarkReceivedPoints } from './services/pointsIntegration'
 
 /* ---------------------------------------------------------------------------
  * Icons
@@ -346,6 +352,11 @@ function PostDetail() {
           .from('post_likes')
           .insert([{ user_id: currentUser.id, post_id: id }])
         if (error && error.code !== '23505') throw error
+
+        // Grant points to post author
+        if (post?.profiles?.id && post.profiles.id !== currentUser.id) {
+          grantLikeReceivedPoints(post.profiles.id, id)
+        }
       }
       await refreshCounts()
     } catch (err) {
@@ -384,6 +395,11 @@ function PostDetail() {
           .from('post_bookmarks')
           .insert([{ user_id: currentUser.id, post_id: id }])
         if (error && error.code !== '23505') throw error
+
+        // Grant points to post author
+        if (post?.profiles?.id && post.profiles.id !== currentUser.id) {
+          grantBookmarkReceivedPoints(post.profiles.id, id)
+        }
       }
       await refreshCounts()
       showToast(prev ? 'Dihapus dari koleksi' : 'Disimpan ke koleksi')
@@ -562,6 +578,13 @@ function PostDetail() {
               )}
 
               <div className="p-6 sm:p-8 lg:p-10">
+                {/* Trending celebration */}
+                {isTrending && (
+                  <div className="mb-5">
+                    <TrendingCelebration show />
+                  </div>
+                )}
+
                 {/* Meta chips */}
                 <div className="flex items-center gap-2 flex-wrap mb-5">
                   {post.category && (
@@ -720,6 +743,23 @@ function PostDetail() {
               <CreatorCTA author={author} currentUser={currentUser} />
             )}
 
+            {/* Affiliate recommendations — bottom of article */}
+            <div className="mt-6">
+              <AffiliateSection
+                title="Tools yang relevan"
+                subtitle="Rekomendasi platform untuk insight ini"
+                layout="grid"
+                variant="default"
+                source={AFFILIATE_SOURCES.POST_BOTTOM}
+                contextId={id}
+                userId={currentUser?.id}
+                category={post.category}
+                limit={3}
+                showSeeAll
+                emptyHidden
+              />
+            </div>
+
             {/* Comments */}
             <div className="mt-6">
               <Comments postId={id} />
@@ -745,6 +785,8 @@ function PostDetail() {
               {headings.length > 1 && <TableOfContents headings={headings} />}
 
               {author && <AuthorCard author={author} />}
+
+              <SidebarAffiliates contextId={id} userId={currentUser?.id} />
 
               {relatedPosts.length > 0 && <RelatedCard posts={relatedPosts} />}
 
@@ -1156,6 +1198,58 @@ function DetailSkeleton() {
           <div key={i} className="bg-white border border-[#E5E7EB] rounded-2xl h-40 animate-pulse" />
         ))}
       </div>
+    </div>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+ * Sidebar affiliate widget (top picks, compact list)
+ * ------------------------------------------------------------------------- */
+function SidebarAffiliates({ contextId, userId }) {
+  const { items, loading } = useTopAffiliates(3)
+  if (!loading && items.length === 0) return null
+  return (
+    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6]">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3z" />
+              <path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z" />
+            </svg>
+          </span>
+          <div>
+            <h3 className="text-sm font-semibold text-[#111827] leading-tight">
+              Tools rekomendasi
+            </h3>
+            <p className="text-[10px] text-[#6B7280] leading-tight">Sponsored picks</p>
+          </div>
+        </div>
+        <Link to="/tools" className="text-xs font-medium text-[#3B82F6] hover:text-[#2563EB]">
+          Semua
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-14 rounded-xl bg-[#F3F4F6] animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {items.map((p) => (
+            <AffiliateCard
+              key={p.id}
+              product={p}
+              variant="compact"
+              source={AFFILIATE_SOURCES.SIDEBAR}
+              contextId={contextId}
+              userId={userId}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from './services/supabaseClient'
+import { grantCommentReceivedPoints } from './services/pointsIntegration'
+import { Trash2 } from 'lucide-react'
+import DeleteConfirmModal from './components/DeleteConfirmModal'
 
 /* ---------------------------------------------------------------------------
  * Icons
@@ -56,14 +59,40 @@ function CommentItem({ comment, currentUser, onReplySubmit, level = 0, allReplie
   const [replyContent, setReplyContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [showReplies, setShowReplies] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleted, setDeleted] = useState(false)
 
   const maxLevel = 3
   const commentReplies = allReplies.filter((r) => r.parent_comment_id === comment.id)
   const hasReplies = commentReplies.length > 0
+  const isCommentOwner = currentUser?.id === comment.user_id
 
   useEffect(() => {
     if (hasReplies && !showReplies) setShowReplies(true)
   }, [hasReplies])
+
+  async function handleDeleteComment() {
+    setDeleting(true)
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', comment.id)
+        .eq('user_id', currentUser.id) // extra safety
+      if (error) throw error
+      setDeleted(true)
+      setShowDeleteModal(false)
+      if (onReplySubmit) onReplySubmit() // refresh parent list
+    } catch (err) {
+      console.error('Delete comment error:', err)
+      alert('Gagal menghapus komentar')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  if (deleted) return null
 
   async function handleSubmitReply(e) {
     e.preventDefault()
@@ -187,7 +216,27 @@ function CommentItem({ comment, currentUser, onReplySubmit, level = 0, allReplie
                 {showReplies ? 'Sembunyikan' : 'Lihat'} {commentReplies.length} balasan
               </button>
             )}
+            {isCommentOwner && (
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6B7280] hover:text-[#EF4444] transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Hapus
+              </button>
+            )}
           </div>
+
+          {/* Delete modal */}
+          <DeleteConfirmModal
+            open={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            onConfirm={handleDeleteComment}
+            loading={deleting}
+            title="Hapus komentar ini?"
+            description="Komentar dan semua balasan di bawahnya akan dihapus permanen."
+            confirmText="Hapus komentar"
+          />
 
           {/* Reply form */}
           <AnimatePresence>
@@ -277,13 +326,24 @@ function Comments({ postId }) {
   const [newComment, setNewComment] = useState('')
   const [currentUser, setCurrentUser] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [postOwnerId, setPostOwnerId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     init()
     fetchAllComments()
+    fetchPostOwner()
   }, [postId])
+
+  async function fetchPostOwner() {
+    const { data } = await supabase
+      .from('posts')
+      .select('user_id')
+      .eq('id', postId)
+      .maybeSingle()
+    if (data) setPostOwnerId(data.user_id)
+  }
 
   async function init() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -333,6 +393,11 @@ function Comments({ postId }) {
     if (!error) {
       setNewComment('')
       await fetchAllComments()
+
+      // Grant points to post author (fire-and-forget)
+      if (postOwnerId && postOwnerId !== currentUser.id) {
+        grantCommentReceivedPoints(postOwnerId, postId)
+      }
     }
     setSubmitting(false)
   }

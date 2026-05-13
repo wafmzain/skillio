@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from './services/supabaseClient'
 import FollowButton from './FollowButton'
 import { usePremium } from './hooks/usePremium'
 import { formatViews } from './utils/formatViews'
+import TrendingCelebration from './components/reputation/TrendingCelebration'
+import { grantLikeReceivedPoints, grantBookmarkReceivedPoints } from './services/pointsIntegration'
+import { usePointsToast } from './components/gamification/PointsToast'
+import { POINT_VALUES } from './services/gamification'
+import DeleteConfirmModal from './components/DeleteConfirmModal'
+import { MoreHorizontal, Trash2, ExternalLink } from 'lucide-react'
 
 /* Minimal stroke icon set shared with the rest of the app */
 const Icon = ({ name, className = 'w-4 h-4', filled = false }) => {
@@ -85,14 +91,19 @@ function timeAgo(iso) {
   return `${Math.floor(diff / 31536000)}th`
 }
 
-function PostCard({ post, currentUser, showAuthor = true }) {
+function PostCard({ post, currentUser, showAuthor = true, onDelete }) {
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [likesCount, setLikesCount] = useState(post.likes_count || 0)
   const [bookmarksCount, setBookmarksCount] = useState(post.bookmarks_count || 0)
   const [commentsCount, setCommentsCount] = useState(post.comments_count || 0)
   const [loading, setLoading] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [deleted, setDeleted] = useState(false)
 
+  const navigate = useNavigate()
   const { isPremium } = usePremium(currentUser?.id)
   const isLocked = post.is_premium && !isPremium
   const isTrending = (post.trending_score || 0) >= 50
@@ -193,6 +204,11 @@ function PostCard({ post, currentUser, showAuthor = true }) {
           .from('post_bookmarks')
           .insert([{ user_id: currentUser.id, post_id: post.id }])
         if (error && error.code !== '23505') throw error
+
+        // Grant points to post author (fire-and-forget, only on new bookmark)
+        if (post.profiles?.id && post.profiles.id !== currentUser.id) {
+          grantBookmarkReceivedPoints(post.profiles.id, post.id)
+        }
       }
       await refreshPostData()
     } catch (err) {
@@ -233,6 +249,11 @@ function PostCard({ post, currentUser, showAuthor = true }) {
           .from('post_likes')
           .insert([{ user_id: currentUser.id, post_id: post.id }])
         if (error && error.code !== '23505') throw error
+
+        // Grant points to post author (fire-and-forget, only on new like)
+        if (post.profiles?.id && post.profiles.id !== currentUser.id) {
+          grantLikeReceivedPoints(post.profiles.id, post.id)
+        }
       }
       await refreshPostData()
     } catch (err) {
@@ -284,8 +305,40 @@ function PostCard({ post, currentUser, showAuthor = true }) {
     }
   }
 
+  const isOwner = currentUser?.id && post.user_id === currentUser.id
+
+  async function handleDeletePost() {
+    if (!isOwner) return
+    setDeleting(true)
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', post.id)
+        .eq('user_id', currentUser.id) // extra safety
+      if (error) throw error
+      setDeleted(true)
+      setShowDeleteModal(false)
+      if (onDelete) onDelete(post.id)
+    } catch (err) {
+      console.error('Delete post error:', err)
+      alert('Gagal menghapus: ' + (err.message || 'Coba lagi'))
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  if (deleted) return null
+
   return (
     <article className="group bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden hover:border-[#3B82F6]/30 hover:shadow-[0_8px_30px_-8px_rgba(59,130,246,0.12)] hover:-translate-y-0.5 transition-all duration-200">
+      {/* Trending celebration banner */}
+      {isTrending && (
+        <div className="px-3 pt-3">
+          <TrendingCelebration show compact />
+        </div>
+      )}
+
       {/* Header: author + timestamp */}
       {showAuthor && post.profiles && (
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
@@ -326,13 +379,47 @@ function PostCard({ post, currentUser, showAuthor = true }) {
             </div>
           </Link>
 
-          <FollowButton
-            profileId={post.profiles.id}
-            profileUsername={post.profiles.username}
-            currentUser={currentUser}
-            size="small"
-            showCount={false}
-          />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <FollowButton
+              profileId={post.profiles.id}
+              profileUsername={post.profiles.username}
+              currentUser={currentUser}
+              size="small"
+              showCount={false}
+            />
+
+            {/* Owner actions menu */}
+            {isOwner && (
+              <div className="relative">
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen((v) => !v) }}
+                  onBlur={() => setTimeout(() => setMenuOpen(false), 150)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors"
+                  aria-label="Aksi lain"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 mt-1 w-40 bg-white border border-[#E5E7EB] rounded-xl shadow-lg overflow-hidden z-10">
+                    <button
+                      onMouseDown={(e) => { e.preventDefault(); navigate(`/post/${post.id}`) }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#111827] hover:bg-[#F9FAFB] transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-[#6B7280]" />
+                      Lihat detail
+                    </button>
+                    <button
+                      onMouseDown={(e) => { e.preventDefault(); setMenuOpen(false); setShowDeleteModal(true) }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#EF4444] hover:bg-red-50 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Hapus insight
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -466,6 +553,16 @@ function PostCard({ post, currentUser, showAuthor = true }) {
           <span>{formatViews(post.views_count || 0)}</span>
         </div>
       </div>
+      {/* Delete confirmation modal */}
+      <DeleteConfirmModal
+        open={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeletePost}
+        loading={deleting}
+        title="Hapus insight ini?"
+        description="Insight beserta semua komentar, likes, dan bookmarks akan dihapus permanen."
+        confirmText="Hapus insight"
+      />
     </article>
   )
 }

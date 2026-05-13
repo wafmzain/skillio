@@ -5,6 +5,9 @@ import { supabase } from './services/supabaseClient'
 import PostCard from './PostCard'
 import FollowButton from './FollowButton'
 import { formatViews } from './utils/formatViews'
+import LeaderboardCard from './components/reputation/LeaderboardCard'
+import AffiliateSection from './components/affiliate/AffiliateSection'
+import { AFFILIATE_SOURCES } from './types/affiliate'
 
 /* ---------------------------------------------------------------------------
  * Icons — minimal stroke set
@@ -430,6 +433,20 @@ function Explore() {
           {/* RIGHT SIDEBAR */}
           <aside className="hidden lg:block lg:col-span-4">
             <div className="sticky top-[92px] space-y-4">
+              <LeaderboardCard limit={5} />
+
+              <AffiliateSection
+                title="Tools rekomendasi"
+                subtitle="Sponsored picks dari platform"
+                layout="list"
+                variant="compact"
+                source={AFFILIATE_SOURCES.SIDEBAR}
+                userId={currentUser?.id}
+                limit={3}
+                showSeeAll
+                emptyHidden
+              />
+
               <TrendingCategoriesCard
                 counts={categoryCounts}
                 selectedCategory={selectedCategory}

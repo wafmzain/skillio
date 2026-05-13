@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from './services/supabaseClient'
 import { formatViews } from './utils/formatViews'
+import { grantPostCreatedPoints } from './services/pointsIntegration'
+import { usePointsToast } from './components/gamification/PointsToast'
+import { POINT_VALUES } from './services/gamification'
 
 /* ---------------------------------------------------------------------------
  * Icons
@@ -97,6 +100,7 @@ const STEPS = [
  * ------------------------------------------------------------------------- */
 function CreatePost() {
   const navigate = useNavigate()
+  const showPointsToast = usePointsToast()
 
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -306,6 +310,12 @@ function CreatePost() {
 
       localStorage.removeItem(DRAFT_KEY)
       showToast('Insight dipublikasikan')
+
+      // Grant gamification points (fire-and-forget)
+      grantPostCreatedPoints(user.id, null).then(() => {
+        if (showPointsToast) showPointsToast({ amount: POINT_VALUES.POST_CREATED, reason: 'post_created' })
+      })
+
       setTimeout(() => navigate('/home'), 700)
     } catch (err) {
       console.error(err)

@@ -122,7 +122,7 @@ function PremiumPaywall({ onUpgrade, compact = false }) {
 
           <p className="text-[11px] text-white/50 mt-4 flex items-center gap-1.5">
             <Icon name="shield" className="w-3 h-3" />
-            Batal kapan saja · Rp 49.000/bulan
+            Batal kapan saja · Rp 9.000/bulan
           </p>
         </div>
       </div>
@@ -200,7 +200,7 @@ function UpgradeModal({ onClose, onUpgrade }) {
                 Total pembayaran
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-[#111827]">Rp 49.000</span>
+                <span className="text-2xl font-bold text-[#111827]">Rp 9.000</span>
                 <span className="text-xs text-[#6B7280]">/bulan</span>
               </div>
             </div>

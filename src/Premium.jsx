@@ -557,7 +557,7 @@ function Premium() {
               </p>
 
               <div className="mb-6">
-                <span className="text-3xl font-bold text-[#111827]">Rp 49.000</span>
+                <span className="text-3xl font-bold text-[#111827]">Rp 9.000</span>
                 <span className="text-sm text-[#6B7280] ml-1">/bulan</span>
               </div>
 
@@ -972,7 +972,7 @@ function UpgradeModal({ onClose, onUpgrade }) {
                 Total pembayaran
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-[#111827]">Rp 49.000</span>
+                <span className="text-2xl font-bold text-[#111827]">Rp 9.000</span>
                 <span className="text-xs text-[#6B7280]">/bulan</span>
               </div>
             </div>

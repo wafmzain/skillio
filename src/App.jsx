@@ -14,6 +14,9 @@ import PostDetail from './PostDetail'
 import Explore from './Explore'
 import Premium from './Premium'
 import Settings from './Settings'
+import Tools from './pages/Tools'
+import Leaderboard from './pages/Leaderboard'
+import Rewards from './pages/Rewards'
 import ProtectedRoute from './ProtectedRoute'
 
 /**
@@ -111,6 +114,29 @@ function App() {
           <ProtectedRoute user={user}>
             <div className="pt-28">
               <Premium />
+            </div>
+          </ProtectedRoute>
+        } />
+
+        {/* Tools / Affiliate Recommendations */}
+        <Route path="/tools" element={
+          <div className="pt-28">
+            <Tools user={user} />
+          </div>
+        } />
+
+        {/* Leaderboard */}
+        <Route path="/leaderboard" element={
+          <div className="pt-28">
+            <Leaderboard />
+          </div>
+        } />
+
+        {/* Rewards */}
+        <Route path="/rewards" element={
+          <ProtectedRoute user={user}>
+            <div className="pt-28">
+              <Rewards />
             </div>
           </ProtectedRoute>
         } />

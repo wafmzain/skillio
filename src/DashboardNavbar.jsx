@@ -24,6 +24,8 @@ const Icon = ({ name, className = 'w-5 h-5' }) => {
       return <svg {...common}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
     case 'sparkles':
       return <svg {...common}><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg>
+    case 'package':
+      return <svg {...common}><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7L12 12l8.7-5M12 22V12"/></svg>
     case 'bell':
       return <svg {...common}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     case 'plus':
@@ -79,6 +81,7 @@ function DashboardNavbar({ user, onLogout }) {
     { name: 'Beranda', path: '/home', icon: 'home' },
     { name: 'Jelajahi', path: '/explore', icon: 'compass' },
     { name: 'Trending', path: '/explore?tab=trending', icon: 'trending' },
+    { name: 'Tools', path: '/tools', icon: 'package' },
     { name: 'Tersimpan', path: '/saved', icon: 'bookmark' },
     { name: 'Skillio+', path: '/premium', icon: 'sparkles' },
   ]

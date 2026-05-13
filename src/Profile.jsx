@@ -5,6 +5,10 @@ import { supabase } from './services/supabaseClient'
 import PostCard from './PostCard'
 import FollowButton from './FollowButton'
 import { formatViews } from './utils/formatViews'
+import { buildReputation } from './services/reputation'
+import ReputationCard from './components/reputation/ReputationCard'
+import LeaderboardCard from './components/reputation/LeaderboardCard'
+import LevelPill from './components/reputation/LevelPill'
 
 /* ---------------------------------------------------------------------------
  * Icons
@@ -225,6 +229,11 @@ function Profile() {
     }
   }, [posts, followersCount, followingCount])
 
+  const reputation = useMemo(
+    () => buildReputation({ posts, isPremium: !!profile?.is_premium }),
+    [posts, profile?.is_premium]
+  )
+
   const badges = useMemo(() => {
     if (!profile) return []
     const list = []
@@ -421,6 +430,9 @@ function Profile() {
                           Skillio+
                         </span>
                       )}
+                      {reputation?.level && (
+                        <LevelPill level={reputation.level} size="small" />
+                      )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-sm text-[#6B7280]">@{profile.username}</span>
@@ -558,6 +570,11 @@ function Profile() {
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 lg:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           <main className="lg:col-span-8 min-w-0">
+            {/* Mobile-only reputation (desktop shows it in the sidebar) */}
+            <div className="lg:hidden mb-4">
+              <ReputationCard reputation={reputation} />
+            </div>
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -608,9 +625,11 @@ function Profile() {
           {/* Sidebar */}
           <aside className="hidden lg:block lg:col-span-4">
             <div className="sticky top-[92px] space-y-4">
+              <ReputationCard reputation={reputation} />
               <CreatorAnalyticsCard stats={stats} />
               {featuredPost && <FeaturedInsightCard post={featuredPost} />}
               {topCategory && <TopCategoryCard topCategory={topCategory} allCounts={posts} />}
+              <LeaderboardCard limit={5} />
               <RecentActivityCard posts={recentActivity} />
               {!profile.is_premium && isOwnProfile && <GrowthPromoCard />}
             </div>

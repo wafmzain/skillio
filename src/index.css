@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+/* Force light mode — Skillio doesn't support dark mode yet.
+   Override the dark variant so it never matches, regardless of OS preference. */
+@custom-variant dark (&:where(.dark-mode-disabled, .dark-mode-disabled *));
+
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
