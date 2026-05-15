@@ -494,8 +494,6 @@ function SectionHeading({ icon, title, subtitle, action }) {
 }
 
 function TrendingHighlights({ posts, currentUser }) {
-  const [hero, ...rest] = posts
-
   return (
     <section>
       <SectionHeading
@@ -504,127 +502,56 @@ function TrendingHighlights({ posts, currentUser }) {
         subtitle="Yang lagi dibicarain komunitas minggu ini"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {hero && (
-          <TrendingHeroCard post={hero} currentUser={currentUser} />
-        )}
-        <div className="grid grid-cols-1 gap-3">
-          {rest.slice(0, 3).map((post, i) => (
-            <TrendingRankCard key={post.id} post={post} rank={i + 2} />
-          ))}
-        </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {posts.slice(0, 6).map((post, i) => (
+          <TrendingCard key={post.id} post={post} rank={String(i + 1).padStart(2, '0')} />
+        ))}
       </div>
     </section>
   )
 }
 
-function TrendingHeroCard({ post, currentUser }) {
+function TrendingCard({ post, rank }) {
   const author = post.profiles
   return (
     <Link
       to={`/post/${post.id}`}
-      className="group relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white hover:border-[#3B82F6]/30 hover:shadow-[0_12px_40px_-12px_rgba(59,130,246,0.18)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col"
+      className="group block p-5 bg-white border border-[#E5E7EB] rounded-2xl hover:border-[#3B82F6]/30 hover:shadow-[0_8px_30px_-8px_rgba(59,130,246,0.15)] hover:-translate-y-0.5 transition-all"
     >
-      <div className="relative aspect-[16/10] bg-gradient-to-br from-blue-100 via-blue-50 to-[#FAFAFA] overflow-hidden">
-        {post.thumbnail_url ? (
-          <img
-            src={post.thumbnail_url}
-            alt={post.title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-            onError={(e) => { e.target.style.display = 'none' }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="inline-flex items-center gap-2 text-[#3B82F6]">
-              <Icon name="sparkles" className="w-8 h-8" />
-            </div>
+      <div className="flex items-start justify-between mb-4">
+        <span className="text-2xl font-bold text-[#E5E7EB] group-hover:text-[#3B82F6] transition-colors">
+          {rank}
+        </span>
+        <span className="inline-flex items-center gap-1 text-xs text-[#3B82F6] font-medium">
+          <Icon name="trending" className="w-3.5 h-3.5" />
+          Trending
+        </span>
+      </div>
+      <h3 className="text-base font-semibold text-[#111827] leading-snug mb-3 line-clamp-2 group-hover:text-[#3B82F6] transition-colors">
+        {post.title}
+      </h3>
+      {author && (
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden shrink-0">
+            {author.avatar_url ? (
+              <img src={author.avatar_url} alt={author.name} className="w-full h-full object-cover" />
+            ) : (
+              author.name?.charAt(0).toUpperCase()
+            )}
           </div>
-        )}
-        <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/90 backdrop-blur-sm text-[#3B82F6] text-[11px] font-semibold shadow-sm">
-          <Icon name="trending" className="w-3 h-3" />
-          #1 Trending
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-[#111827] truncate">{author.name}</div>
+            <div className="text-[11px] text-[#6B7280] truncate">@{author.username}</div>
+          </div>
         </div>
+      )}
+      <div className="flex items-center justify-between pt-3 border-t border-[#F3F4F6]">
         {post.category && (
-          <div className="absolute top-3 right-3 inline-flex items-center px-2.5 py-1 rounded-md bg-[#111827]/80 backdrop-blur-sm text-white text-[11px] font-medium">
-            {post.category}
-          </div>
+          <span className="text-[11px] font-medium text-[#6B7280]">{post.category}</span>
         )}
-      </div>
-
-      <div className="p-5 flex-1 flex flex-col">
-        <h3 className="text-base sm:text-lg font-semibold text-[#111827] leading-snug mb-2 line-clamp-2 group-hover:text-[#3B82F6] transition-colors">
-          {post.title}
-        </h3>
-        {post.excerpt && (
-          <p className="text-sm text-[#6B7280] leading-relaxed line-clamp-2 mb-4">
-            {post.excerpt}
-          </p>
-        )}
-
-        <div className="mt-auto flex items-center justify-between gap-3">
-          {author && (
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-semibold overflow-hidden shrink-0">
-                {author.avatar_url ? (
-                  <img src={author.avatar_url} alt={author.name} className="w-full h-full object-cover" />
-                ) : (
-                  author.name?.charAt(0).toUpperCase()
-                )}
-              </div>
-              <div className="min-w-0">
-                <div className="text-xs font-semibold text-[#111827] truncate">
-                  {author.name}
-                </div>
-                <div className="text-[11px] text-[#6B7280] truncate">
-                  @{author.username}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center gap-3 text-[11px] text-[#6B7280] shrink-0">
-            <span className="inline-flex items-center gap-1">
-              <Icon name="heart" className="w-3 h-3" />
-              {formatViews(post.likes_count || 0)}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Icon name="eye" className="w-3 h-3" />
-              {formatViews(post.views_count || 0)}
-            </span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-function TrendingRankCard({ post, rank }) {
-  const author = post.profiles
-  return (
-    <Link
-      to={`/post/${post.id}`}
-      className="group flex items-center gap-4 p-3.5 bg-white border border-[#E5E7EB] rounded-xl hover:border-[#3B82F6]/30 hover:shadow-[0_6px_20px_-8px_rgba(59,130,246,0.15)] hover:-translate-y-0.5 transition-all duration-200"
-    >
-      <div className="text-xl font-bold text-[#E5E7EB] group-hover:text-[#3B82F6] transition-colors w-8 shrink-0 text-center">
-        #{rank}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-semibold text-[#111827] leading-snug line-clamp-2 mb-1.5 group-hover:text-[#3B82F6] transition-colors">
-          {post.title}
-        </h4>
-        <div className="flex items-center gap-2 text-[11px] text-[#6B7280]">
-          {author && (
-            <>
-              <span className="truncate font-medium text-[#111827]">{author.name}</span>
-              <span className="w-0.5 h-0.5 rounded-full bg-[#9CA3AF]" />
-            </>
-          )}
-          <span className="inline-flex items-center gap-1 shrink-0">
-            <Icon name="heart" className="w-3 h-3" />
-            {formatViews(post.likes_count || 0)}
-          </span>
+        <div className="flex items-center gap-3 text-[11px] text-[#6B7280]">
+          <span className="flex items-center gap-1"><Icon name="heart" className="w-3 h-3" /> {formatViews(post.likes_count || 0)}</span>
+          <span className="flex items-center gap-1"><Icon name="message" className="w-3 h-3" /> {formatViews(post.comments_count || 0)}</span>
         </div>
       </div>
     </Link>

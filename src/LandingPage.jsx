@@ -205,29 +205,6 @@ const FeedMockup = () => {
         </div>
       </div>
 
-      {/* Floating trending chip */}
-      <div className="absolute -top-4 -right-4 bg-white border border-[#E5E7EB] rounded-2xl shadow-lg px-3 py-2 flex items-center gap-2 animate-[float_5s_ease-in-out_infinite]">
-        <div className="w-7 h-7 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6] flex items-center justify-center">
-          <Icon name="trending" className="w-4 h-4" />
-        </div>
-        <div>
-          <div className="text-[10px] text-[#6B7280] leading-tight">Trending hari ini</div>
-          <div className="text-xs font-semibold text-[#111827] leading-tight">+124 insight baru</div>
-        </div>
-      </div>
-
-      {/* Floating engagement chip */}
-      <div className="absolute -bottom-4 -left-4 bg-white border border-[#E5E7EB] rounded-2xl shadow-lg px-3 py-2 flex items-center gap-2 animate-[float_6s_ease-in-out_infinite_reverse]">
-        <div className="flex -space-x-1.5">
-          {['from-blue-400 to-blue-600', 'from-amber-400 to-orange-500', 'from-emerald-400 to-teal-500'].map((c, i) => (
-            <div key={i} className={`w-6 h-6 rounded-full bg-gradient-to-br ${c} border-2 border-white`} />
-          ))}
-        </div>
-        <div>
-          <div className="text-[10px] text-[#6B7280] leading-tight">Anggota aktif</div>
-          <div className="text-xs font-semibold text-[#111827] leading-tight">2.4K online</div>
-        </div>
-      </div>
     </div>
   )
 }
@@ -255,13 +232,13 @@ function LandingPage({ user }) {
             <div className="relative">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E5E7EB] text-xs font-medium text-[#111827] shadow-sm mb-6">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6] animate-pulse" />
-                Tempat berbagi insight & pengalaman
+                Belajar dan Berkembang Bersama Komunitas
               </span>
 
               <h1 className="text-[clamp(2.25rem,5vw,3.75rem)] font-bold leading-[1.1] tracking-tight text-[#111827] mb-6">
-                Bagikan Insight dan Pengalamanmu ke{' '}
+                Bagikan insight dan skill bersama komunitas modern {' '}
                 <span className="relative inline-block">
-                  <span className="text-[#3B82F6]">Komunitas</span>
+                  <span className="text-[#3B82F6]">dukungan AI.</span>
                   <svg
                     className="absolute -bottom-1.5 left-0 w-full h-2.5"
                     viewBox="0 0 300 10"
@@ -280,8 +257,7 @@ function LandingPage({ user }) {
               </h1>
 
               <p className="text-base sm:text-lg text-[#6B7280] leading-relaxed max-w-[540px] mb-8">
-                Ruang modern buat berbagi ide, pengalaman, dan pengetahuan dari berbagai
-                kalangan. Temukan inspirasi, bangun koneksi, dan tumbuh bareng komunitas.
+                Platform social learning modern untuk berbagi pengetahuan, membangun reputasi digital, dan menemukan inspirasi dari berbagai kalangan.
               </p>
 
               <div className="flex flex-wrap items-center gap-3 mb-10">
@@ -298,19 +274,7 @@ function LandingPage({ user }) {
                 </Link>
               </div>
 
-              {/* Engagement stats */}
-              <div className="grid grid-cols-3 gap-4 max-w-[440px]">
-                {[
-                  { value: '10K+', label: 'Anggota aktif' },
-                  { value: '48K', label: 'Insight dibagikan' },
-                  { value: '2.1M', label: 'Interaksi bulan ini' },
-                ].map((s) => (
-                  <div key={s.label} className="border-l-2 border-[#E5E7EB] pl-3">
-                    <div className="text-xl sm:text-2xl font-bold text-[#111827]">{s.value}</div>
-                    <div className="text-xs text-[#6B7280]">{s.label}</div>
-                  </div>
-                ))}
-              </div>
+              {/* Engagement stats removed */}
             </div>
 
             {/* RIGHT — Feed mockup */}
@@ -418,70 +382,7 @@ function LandingPage({ user }) {
         </section>
 
         {/* =====================================================================
-         * FEATURED CREATORS
-         * ===================================================================*/}
-        <section id="creators" className="px-4 sm:px-6 py-16 lg:py-20 bg-white border-y border-[#E5E7EB]">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
-              <div>
-                <div className="inline-flex items-center gap-2 text-[#3B82F6] mb-2">
-                  <Icon name="users" className="w-4 h-4" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">Anggota pilihan</span>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight">
-                  Orang yang lagi aktif berbagi
-                </h2>
-              </div>
-              <Link
-                to="/home"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors"
-              >
-                Temukan lainnya
-                <Icon name="arrow-right" className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { name: 'Sarah Kim', role: 'UI Designer', followers: '12.4K', color: 'from-blue-400 to-blue-600', tag: 'Design' },
-                { name: 'Rizky P.', role: 'Mahasiswa', followers: '8.7K', color: 'from-amber-400 to-orange-500', tag: 'Pendidikan' },
-                { name: 'Maya L.', role: 'Product Manager', followers: '6.2K', color: 'from-emerald-400 to-teal-500', tag: 'Produk' },
-                { name: 'Dimas A.', role: 'Frontend Dev', followers: '9.1K', color: 'from-violet-400 to-purple-600', tag: 'Programming' },
-              ].map((creator) => (
-                <div
-                  key={creator.name}
-                  className="group relative p-5 bg-white border border-[#E5E7EB] rounded-2xl hover:border-[#3B82F6]/30 hover:shadow-[0_8px_30px_-8px_rgba(59,130,246,0.15)] hover:-translate-y-0.5 transition-all"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div
-                      className={`w-12 h-12 rounded-full bg-gradient-to-br ${creator.color} flex items-center justify-center text-white font-bold shadow-sm`}
-                    >
-                      {creator.name.charAt(0)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-semibold text-[#111827] truncate">{creator.name}</div>
-                      <div className="text-xs text-[#6B7280] truncate">{creator.role}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="px-2 py-1 rounded-md bg-[#F3F4F6] text-[11px] font-medium text-[#6B7280]">
-                      {creator.tag}
-                    </span>
-                    <div className="text-xs text-[#6B7280]">
-                      <span className="font-semibold text-[#111827]">{creator.followers}</span> pengikut
-                    </div>
-                  </div>
-                  <button className="w-full px-3 py-2 rounded-lg bg-[#F3F4F6] group-hover:bg-[#3B82F6] text-xs font-semibold text-[#111827] group-hover:text-white transition-colors">
-                    + Ikuti
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* =====================================================================
-         * FEATURES — Why Skillio (creator-focused, not LMS)
+         * FEATURES — Why Skillio
          * ===================================================================*/}
         <section className="px-4 sm:px-6 py-20 lg:py-28">
           <div className="max-w-[1200px] mx-auto">
@@ -503,33 +404,33 @@ function LandingPage({ user }) {
               {[
                 {
                   icon: 'pen',
-                  title: 'Tulis insight, bukan kursus',
-                  desc: 'Format feed yang ringan. Bagikan pemikiran, pengalaman, atau studi kasus tanpa harus bikin modul panjang.',
+                  title: 'Langsung tulis, langsung publish',
+                  desc: 'Gak perlu bikin kursus atau modul. Cukup tulis apa yang kamu tahu, pengalaman kamu, atau hal yang baru kamu pelajari.',
                 },
                 {
                   icon: 'network',
-                  title: 'Networking natural',
-                  desc: 'Ikuti orang yang relevan. Diskusi lewat komentar. Bangun koneksi tanpa rasa formal.',
+                  title: 'Ketemu orang yang sefrekuensi',
+                  desc: 'Follow orang yang insight-nya kamu suka. Ngobrol di komentar. Koneksi tumbuh dari situ.',
                 },
                 {
                   icon: 'trending',
-                  title: 'Distribusi organik',
-                  desc: 'Algoritma highlight insight yang relevan ke audiens yang tepat. Karya bagus dapat panggung.',
+                  title: 'Tulisan bagus naik sendiri',
+                  desc: 'Gak perlu followers banyak buat dilihat. Insight yang bermanfaat otomatis muncul di feed orang lain.',
                 },
                 {
                   icon: 'bookmark',
-                  title: 'Koleksi personal',
-                  desc: 'Simpan insight ke koleksi pribadi. Bangun second brain dari ide orang yang kamu respect.',
+                  title: 'Simpan yang penting',
+                  desc: 'Nemu insight bagus? Bookmark. Nanti bisa dibaca ulang kapan aja tanpa harus scroll cari lagi.',
                 },
                 {
                   icon: 'message',
-                  title: 'Diskusi bermakna',
-                  desc: 'Thread komentar yang fokus. Tanpa noise, tanpa spam, tempat ide diuji dan diperdalam.',
+                  title: 'Komentar yang beneran diskusi',
+                  desc: 'Bukan tempat spam atau debat kusir. Di sini orang beneran nanya, jawab, dan saling bantu.',
                 },
                 {
                   icon: 'zap',
-                  title: 'Tumbuh tanpa gimmick',
-                  desc: 'Engagement stats yang transparan. Fokus ke kualitas insight, bukan ke clickbait.',
+                  title: 'Gak ada drama engagement',
+                  desc: 'Semua transparan. Yang penting isi tulisannya, bukan siapa yang paling rame.',
                 },
               ].map((f) => (
                 <div
@@ -543,109 +444,6 @@ function LandingPage({ user }) {
                   <p className="text-sm text-[#6B7280] leading-relaxed">{f.desc}</p>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* =====================================================================
-         * SKILLIO+  — creator enhancement tools, NOT a paywall
-         * ===================================================================*/}
-        <section className="px-4 sm:px-6 py-20 lg:py-28">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="relative bg-gradient-to-br from-[#111827] to-[#1F2937] rounded-3xl overflow-hidden p-8 sm:p-12 lg:p-16">
-              {/* Decorative accents */}
-              <div className="absolute top-0 right-0 w-80 h-80 bg-[#3B82F6]/20 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#3B82F6]/10 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="relative grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-xs font-medium text-white mb-6">
-                    <Icon name="sparkles" className="w-3.5 h-3.5" />
-                    Skillio+ · Productivity tools
-                  </div>
-
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-tight mb-4">
-                    Tools tambahan biar kamu lebih produktif berbagi insight
-                  </h2>
-
-                  <p className="text-base text-[#9CA3AF] leading-relaxed mb-8 max-w-[520px]">
-                    Skillio+ bukan paywall konten. Semua feed tetap bisa diakses bebas. Ini set tools
-                    opsional buat siapa saja yang mau bikin, edit, dan distribusi insight lebih cepat.
-                  </p>
-
-                  <ul className="space-y-3 mb-8">
-                    {[
-                      'AI assist untuk summarize, outline, dan improve tulisan',
-                      'Analytics detail per insight — reach, retention, pertumbuhan pengikut',
-                      'Scheduled posting dan draft yang ter-sinkron lintas device',
-                      'Badge verified untuk kredibilitas di feed',
-                    ].map((perk) => (
-                      <li key={perk} className="flex items-start gap-3 text-sm text-white/90">
-                        <span className="w-5 h-5 rounded-full bg-[#3B82F6]/20 text-[#3B82F6] flex items-center justify-center shrink-0 mt-0.5">
-                          <Icon name="check" className="w-3 h-3" />
-                        </span>
-                        {perk}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="flex flex-wrap gap-3">
-                    <Link to={user ? '/premium' : '/register'}>
-                      <button className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-[#111827] bg-white hover:bg-[#F3F4F6] transition-colors">
-                        Coba Skillio+
-                        <Icon name="arrow-right" className="w-4 h-4" />
-                      </button>
-                    </Link>
-                    <Link to="/premium">
-                      <button className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/10 transition-colors">
-                        Lihat detail
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Creator analytics mock */}
-                <div className="relative">
-                  <div className="bg-white/[0.04] backdrop-blur-sm border border-white/10 rounded-2xl p-5">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <div className="text-xs text-[#9CA3AF]">Performa 7 hari</div>
-                        <div className="text-lg font-semibold text-white">Analytics Insight</div>
-                      </div>
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500/15 text-emerald-300 text-[11px] font-semibold">
-                        <Icon name="trending" className="w-3 h-3" /> +24%
-                      </span>
-                    </div>
-
-                    {/* Mini bar chart */}
-                    <div className="flex items-end gap-2 h-24 mb-5">
-                      {[40, 55, 35, 70, 60, 85, 95].map((h, i) => (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                          <div
-                            className="w-full rounded-md bg-gradient-to-t from-[#3B82F6] to-[#60A5FA]"
-                            style={{ height: `${h}%` }}
-                          />
-                          <span className="text-[10px] text-[#6B7280]">S{i + 1}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Metrics */}
-                    <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
-                      {[
-                        { label: 'Reach', value: '48.2K' },
-                        { label: 'Engagement', value: '7.9%' },
-                        { label: 'Pengikut baru', value: '+312' },
-                      ].map((m) => (
-                        <div key={m.label}>
-                          <div className="text-xs text-[#9CA3AF]">{m.label}</div>
-                          <div className="text-sm font-semibold text-white">{m.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
@@ -724,32 +522,42 @@ function LandingPage({ user }) {
               <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl pointer-events-none" />
 
               <div className="relative">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-semibold mb-5">
+                {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-semibold mb-5">
                   <Icon name="sparkles" className="w-3.5 h-3.5" />
                   Gratis, tanpa kartu kredit
-                </div>
+                </div> */}
 
                 <h2 className="text-3xl sm:text-4xl font-bold text-[#111827] tracking-tight leading-tight mb-4">
-                  Bangun audiens kamu, mulai hari ini
+                  Bangun reputasi digitalmu,<br className="hidden sm:block" />
+                  mulai dari satu insight
                 </h2>
-                <p className="text-base text-[#6B7280] leading-relaxed max-w-[560px] mx-auto mb-8">
-                  Gabung ke komunitas yang saling bantu. Posting pertama kamu bisa ditulis
-                  dalam 5 menit.
+                <p className="text-base text-[#6B7280] leading-relaxed max-w-[540px] mx-auto mb-8">
+                   Belajar dan berkembang bersama komunitas digital modern.
                 </p>
 
-                <div className="flex flex-wrap gap-3 justify-center">
+                <div className="flex flex-wrap gap-3 justify-center mb-6">
                   <Link to={user ? '/upload' : '/register'}>
-                    <button className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all">
+                    <button className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#3B82F6] hover:bg-[#2563EB] shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all">
                       Mulai Berbagi
                       <Icon name="arrow-right" className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                     </button>
                   </Link>
                   <Link to="/home">
-                    <button className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-[#111827] bg-white border border-[#E5E7EB] hover:border-[#3B82F6]/40 transition-all">
+                    <button className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-[#111827] bg-white border border-[#E5E7EB] hover:border-[#3B82F6]/40 hover:bg-[#F9FAFB] transition-all">
                       Jelajahi Feed
                     </button>
                   </Link>
                 </div>
+
+                {/* Social proof micro-strip */}
+                {/* <div className="flex items-center justify-center gap-2 text-xs text-[#6B7280]">
+                  <div className="flex -space-x-1.5">
+                    {['from-blue-400 to-blue-600', 'from-violet-400 to-purple-600', 'from-emerald-400 to-teal-500', 'from-amber-400 to-orange-500'].map((c, i) => (
+                      <div key={i} className={`w-6 h-6 rounded-full bg-gradient-to-br ${c} border-2 border-white`} />
+                    ))}
+                  </div>
+                  <span>Bergabung dengan komunitas yang terus tumbuh</span>
+                </div> */}
               </div>
             </div>
           </div>
@@ -758,66 +566,10 @@ function LandingPage({ user }) {
         {/* =====================================================================
          * FOOTER
          * ===================================================================*/}
-        <footer className="px-4 sm:px-6 pt-16 pb-10 bg-white border-t border-[#E5E7EB]">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-12">
-              <div className="col-span-2">
-                <div className="flex items-center gap-2 mb-4">
-                  <img src="/logo.png" alt="Skillio" className="h-10 w-auto object-contain" />
-                </div>
-                <p className="text-sm text-[#6B7280] leading-relaxed max-w-[320px] mb-5">
-                  Platform berbagi insight, pengalaman, dan inspirasi untuk semua kalangan.
-                  Dibangun untuk komunitas, bukan algoritma.
-                </p>
-                <div className="flex gap-2">
-                  {['T', 'L', 'G', 'I'].map((s) => (
-                    <a
-                      key={s}
-                      href="#"
-                      className="w-9 h-9 rounded-lg bg-[#F3F4F6] hover:bg-[#3B82F6] hover:text-white text-[#6B7280] flex items-center justify-center text-xs font-bold transition-colors"
-                    >
-                      {s}
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              {[
-                { title: 'Produk', items: ['Feed', 'Trending', 'Anggota', 'Skillio+'] },
-                { title: 'Komunitas', items: ['Jelajahi', 'Topik', 'Anggota pilihan', 'Panduan'] },
-                { title: 'Perusahaan', items: ['Tentang', 'Blog', 'Kontak', 'Karir'] },
-              ].map((col) => (
-                <div key={col.title}>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-[#111827] mb-4">
-                    {col.title}
-                  </h4>
-                  <ul className="space-y-2.5">
-                    {col.items.map((item) => (
-                      <li key={item}>
-                        <a
-                          href="#"
-                          className="text-sm text-[#6B7280] hover:text-[#3B82F6] transition-colors"
-                        >
-                          {item}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-6 border-t border-[#E5E7EB] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <p className="text-xs text-[#6B7280]">
-                © {new Date().getFullYear()} Skillio. Dibuat untuk komunitas.
-              </p>
-              <div className="flex gap-5 text-xs text-[#6B7280]">
-                <a href="#" className="hover:text-[#3B82F6] transition-colors">Privasi</a>
-                <a href="#" className="hover:text-[#3B82F6] transition-colors">Ketentuan</a>
-                <a href="#" className="hover:text-[#3B82F6] transition-colors">Cookie</a>
-              </div>
-            </div>
-          </div>
+        <footer className="px-4 sm:px-6 py-10 border-t border-[#E5E7EB]">
+          <p className="text-center text-xs text-[#9CA3AF]">
+            © {new Date().getFullYear()} Skillio. Learn, share, and grow together.
+          </p>
         </footer>
       </div>
     </div>
