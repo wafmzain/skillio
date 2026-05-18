@@ -315,7 +315,7 @@ function Explore() {
           >
             {CATEGORIES.map((cat) => {
               const active = selectedCategory === cat
-              const count = cat === 'Semua' ? posts.length : categoryCounts[cat] || 0
+              const count = cat === 'Semua' ? highlightPool.length : categoryCounts[cat] || 0
               return (
                 <button
                   key={cat}
@@ -359,7 +359,7 @@ function Explore() {
             )}
 
             {/* ===== Creator spotlight (only when no filter) ===== */}
-            {!hasFilter && spotlightCreators.length > 0 && !loading && (
+            {!hasFilter && spotlightCreators.length > 0 && (
               <CreatorSpotlight
                 creators={spotlightCreators}
                 currentUser={currentUser}
