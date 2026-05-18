@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from './services/supabaseClient'
@@ -8,6 +8,8 @@ import { formatViews } from './utils/formatViews'
 import LeaderboardCard from './components/reputation/LeaderboardCard'
 import AffiliateSection from './components/affiliate/AffiliateSection'
 import { AFFILIATE_SOURCES } from './types/affiliate'
+import { useInfiniteFeed } from './hooks/useInfiniteFeed'
+import { FeedSentinel, PostCardSkeletonList } from './components/feed'
 
 /* ---------------------------------------------------------------------------
  * Icons — minimal stroke set
@@ -83,19 +85,33 @@ const SORT_OPTIONS = [
 function Explore() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [currentUser, setCurrentUser] = useState(null)
-  const [posts, setPosts] = useState([])
+  const [highlightPool, setHighlightPool] = useState([])  // small fixed slice for trending highlights + counts
   const [creators, setCreators] = useState([])
-  const [loading, setLoading] = useState(true)
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery.trim())
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('cat') || 'Semua')
   const [sortBy, setSortBy] = useState(searchParams.get('tab') || 'trending')
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
 
+  /* Debounce search term so typing doesn't fire a query per keystroke. */
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 280)
+    return () => clearTimeout(t)
+  }, [searchQuery])
+
+  /* Paginated main feed. */
+  const feed = useInfiniteFeed({
+    pageSize: 12,
+    category: selectedCategory,
+    sort: sortBy,
+    search: debouncedSearch,
+  })
+
   /* --------------------------------- data ------------------------------- */
   useEffect(() => {
     getCurrentUser()
-    fetchPosts()
+    fetchHighlights()
     fetchCreators()
   }, [])
 
@@ -113,21 +129,26 @@ function Explore() {
     setCurrentUser(user)
   }
 
-  async function fetchPosts() {
-    setLoading(true)
+  /**
+   * Small hot pool used by the trending highlights, category counts, and
+   * sidebar widgets. The main grid is paginated separately by the hook so
+   * we only ship a thin slice (40 rows) for the at-a-glance widgets.
+   */
+  async function fetchHighlights() {
     const { data, error } = await supabase
       .from('posts')
-      .select('*, profiles(id, username, name, avatar_url, is_premium)')
+      .select('id, title, excerpt, category, thumbnail_url, trending_score, likes_count, comments_count, bookmarks_count, views_count, created_at, user_id, is_premium, profiles!inner(id, username, name, avatar_url, is_premium)')
+      .order('trending_score', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
-      .limit(60)
-    if (!error) setPosts(data || [])
-    setLoading(false)
+      .limit(40)
+    if (!error) setHighlightPool(data || [])
   }
 
   async function fetchCreators() {
     const { data: profiles, error } = await supabase
       .from('profiles')
       .select('id, username, name, avatar_url, is_premium, bio')
+      .order('points', { ascending: false, nullsFirst: false })
       .limit(20)
     if (error || !profiles) return
 
@@ -148,61 +169,30 @@ function Explore() {
     setCreators(sorted)
   }
 
+  /* Stable callbacks for the memoized PostCard. */
+  const handlePostDeleted = useCallback(() => feed.refresh(), [feed])
+
   /* ------------------------------ derived data ------------------------------ */
-  const filteredPosts = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim()
-    let list = posts.filter((post) => {
-      const inTitle = (post.title || '').toLowerCase().includes(q)
-      const inExcerpt = (post.excerpt || '').toLowerCase().includes(q)
-      const inCreator = (post.profiles?.name || '').toLowerCase().includes(q)
-      const inUsername = (post.profiles?.username || '').toLowerCase().includes(q)
-      const matchesSearch = !q || inTitle || inExcerpt || inCreator || inUsername
-      const matchesCategory =
-        selectedCategory === 'Semua' || post.category === selectedCategory
-      return matchesSearch && matchesCategory
-    })
-
-    switch (sortBy) {
-      case 'latest':
-        list = [...list].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )
-        break
-      case 'popular':
-        list = [...list].sort(
-          (a, b) => (b.likes_count || 0) - (a.likes_count || 0)
-        )
-        break
-      case 'trending':
-      default:
-        list = [...list].sort((a, b) => {
-          const scoreA = (a.trending_score || 0) + (a.likes_count || 0) * 0.5
-          const scoreB = (b.trending_score || 0) + (b.likes_count || 0) * 0.5
-          return scoreB - scoreA
-        })
-    }
-    return list
-  }, [posts, searchQuery, selectedCategory, sortBy])
-
-  // Trending highlight: top 3 by trending_score or likes
+  // Trending highlight: top items from the hot pool.
   const trendingPosts = useMemo(() => {
-    return [...posts]
+    return [...highlightPool]
       .sort(
         (a, b) =>
           (b.trending_score || 0) + (b.likes_count || 0) * 0.3 -
           ((a.trending_score || 0) + (a.likes_count || 0) * 0.3)
       )
       .slice(0, 4)
-  }, [posts])
+  }, [highlightPool])
 
-  // Derived category counts for chips & sidebar
+  // Category counts derived from the hot pool — close enough to feel real
+  // without requiring a full scan.
   const categoryCounts = useMemo(() => {
     const map = {}
-    posts.forEach((p) => {
+    highlightPool.forEach((p) => {
       if (p.category) map[p.category] = (map[p.category] || 0) + 1
     })
     return map
-  }, [posts])
+  }, [highlightPool])
 
   const topCreators = creators.slice(0, 5)
   const spotlightCreators = creators.slice(0, 4)
@@ -361,7 +351,7 @@ function Explore() {
           {/* MAIN COLUMN */}
           <main className="lg:col-span-8 min-w-0 space-y-10">
             {/* ===== Trending highlights (only when no filter) ===== */}
-            {!hasFilter && trendingPosts.length > 0 && !loading && (
+            {!hasFilter && trendingPosts.length > 0 && (
               <TrendingHighlights
                 posts={trendingPosts}
                 currentUser={currentUser}
@@ -388,15 +378,15 @@ function Explore() {
                     : 'Semua Insight'
                 }
                 subtitle={
-                  loading
-                    ? 'Memuat...'
-                    : `${filteredPosts.length} insight ditemukan`
+                  feed.loading
+                    ? 'Memuat insight…'
+                    : `${feed.posts.length}${feed.hasMore ? '+' : ''} insight ditemukan`
                 }
               />
 
-              {loading ? (
+              {feed.loading ? (
                 <PostGridSkeleton />
-              ) : filteredPosts.length === 0 ? (
+              ) : feed.posts.length === 0 ? (
                 <EmptyState
                   onReset={() => {
                     setSearchQuery('')
@@ -404,28 +394,41 @@ function Explore() {
                   }}
                 />
               ) : (
-                <motion.div
-                  initial="hidden"
-                  animate="show"
-                  variants={{
-                    hidden: {},
-                    show: { transition: { staggerChildren: 0.04 } },
-                  }}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                >
-                  {filteredPosts.map((post) => (
-                    <motion.div
-                      key={post.id}
-                      variants={{
-                        hidden: { opacity: 0, y: 8 },
-                        show: { opacity: 1, y: 0 },
-                      }}
-                      transition={{ duration: 0.25, ease: 'easeOut' }}
-                    >
-                      <PostCard post={post} currentUser={currentUser} showAuthor />
-                    </motion.div>
-                  ))}
-                </motion.div>
+                <>
+                  <motion.div
+                    initial="hidden"
+                    animate="show"
+                    variants={{
+                      hidden: {},
+                      show: { transition: { staggerChildren: 0.04 } },
+                    }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  >
+                    {feed.posts.map((post) => (
+                      <motion.div
+                        key={post.id}
+                        variants={{
+                          hidden: { opacity: 0, y: 8 },
+                          show: { opacity: 1, y: 0 },
+                        }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                      >
+                        <PostCard
+                          post={post}
+                          currentUser={currentUser}
+                          showAuthor
+                          onDelete={handlePostDeleted}
+                        />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+
+                  <FeedSentinel
+                    loaderRef={feed.loaderRef}
+                    hasMore={feed.hasMore}
+                    loading={feed.loadingMore}
+                  />
+                </>
               )}
             </section>
           </main>

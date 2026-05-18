@@ -95,6 +95,9 @@ function Profile() {
   const [currentUser, setCurrentUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [posts, setPosts] = useState([])
+  const [postsLimit, setPostsLimit] = useState(30)
+  const [postsHasMore, setPostsHasMore] = useState(false)
+  const [postsLoadingMore, setPostsLoadingMore] = useState(false)
   const [savedPosts, setSavedPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [isOwnProfile, setIsOwnProfile] = useState(false)
@@ -172,13 +175,28 @@ function Profile() {
     setFollowingCount(following || 0)
   }
 
-  async function fetchPosts(profileId) {
+  async function fetchPosts(profileId, limit = 30) {
     const { data, error } = await supabase
       .from('posts')
-      .select('*, profiles(id, username, name, avatar_url, is_premium)')
+      .select('*, profiles!inner(id, username, name, avatar_url, is_premium)')
       .eq('user_id', profileId)
       .order('created_at', { ascending: false })
-    if (!error) setPosts(data || [])
+      .limit(limit + 1) // probe one extra to know if there's more
+    if (!error) {
+      const rows = data || []
+      const hasMore = rows.length > limit
+      setPosts(hasMore ? rows.slice(0, limit) : rows)
+      setPostsHasMore(hasMore)
+    }
+  }
+
+  async function handleLoadMorePosts() {
+    if (!profile || postsLoadingMore) return
+    setPostsLoadingMore(true)
+    const next = postsLimit + 20
+    await fetchPosts(profile.id, next)
+    setPostsLimit(next)
+    setPostsLoadingMore(false)
   }
 
   async function fetchSavedPosts(userId) {
@@ -616,6 +634,27 @@ function Profile() {
                         />
                       </motion.div>
                     ))}
+
+                    {/* Load more — paginates the author's post list. */}
+                    {activeTab === 'posts' && postsHasMore && (
+                      <div className="pt-2 flex justify-center">
+                        <button
+                          type="button"
+                          onClick={handleLoadMorePosts}
+                          disabled={postsLoadingMore}
+                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#3B82F6] bg-white border border-[#E5E7EB] hover:bg-[#F9FAFB] active:bg-[#F3F4F6] disabled:opacity-60 transition-colors"
+                        >
+                          {postsLoadingMore ? (
+                            <>
+                              <span className="w-3.5 h-3.5 inline-block rounded-full border-2 border-[#E5E7EB] border-t-[#3B82F6] animate-spin" />
+                              Memuat…
+                            </>
+                          ) : (
+                            'Tampilkan lebih banyak'
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </motion.div>

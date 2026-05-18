@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from './services/supabaseClient'
 import FollowButton from './FollowButton'
@@ -351,6 +351,8 @@ function PostCard({ post, currentUser, showAuthor = true, onDelete }) {
                 <img
                   src={post.profiles.avatar_url}
                   alt={post.profiles.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -475,6 +477,7 @@ function PostCard({ post, currentUser, showAuthor = true, onDelete }) {
               src={post.thumbnail_url}
               alt={post.title}
               loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               onError={(e) => { e.target.style.display = 'none' }}
             />
@@ -567,4 +570,18 @@ function PostCard({ post, currentUser, showAuthor = true, onDelete }) {
   )
 }
 
-export default PostCard
+export default memo(PostCard, (prev, next) => {
+  // Re-render only when the post identity or its server-side counts change.
+  // Local interaction state (like/bookmark optimistic toggles) lives inside
+  // the component, so reactions on one card no longer ripple across the feed.
+  if (prev.post.id !== next.post.id) return false
+  if (prev.currentUser?.id !== next.currentUser?.id) return false
+  if (prev.showAuthor !== next.showAuthor) return false
+  if (prev.onDelete !== next.onDelete) return false
+  if ((prev.post.likes_count || 0) !== (next.post.likes_count || 0)) return false
+  if ((prev.post.bookmarks_count || 0) !== (next.post.bookmarks_count || 0)) return false
+  if ((prev.post.comments_count || 0) !== (next.post.comments_count || 0)) return false
+  if ((prev.post.views_count || 0) !== (next.post.views_count || 0)) return false
+  if ((prev.post.trending_score || 0) !== (next.post.trending_score || 0)) return false
+  return true
+})

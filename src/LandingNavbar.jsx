@@ -27,7 +27,6 @@ function LandingNavbar() {
     { name: 'Jelajahi', path: '/home' },
     { name: 'Trending', path: '/explore' },
     { name: 'Tools', path: '/tools' },
-    { name: 'Komunitas', path: '/home#creators' },
     { name: 'Skillio+', path: '/premium' },
   ]
 

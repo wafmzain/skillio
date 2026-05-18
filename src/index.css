@@ -138,3 +138,61 @@ body {
   display: none;
 }
 
+
+/* =============================================================
+ * Mobile shell
+ * Safe-area + route padding for the mobile layout.
+ * Heights:
+ *   - Mobile top bar:     56px
+ *   - Mobile bottom nav:  64px (+ safe-area-inset-bottom)
+ * ============================================================= */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Wrap every authenticated route content in this on mobile so it
+   clears the fixed top bar and floating bottom nav on iOS / Android.
+   The bottom nav is a floating pill (~64px tall) that sits ~12px above
+   the safe area, plus the raised center FAB pokes up another ~14px.
+   ⇒ 64 + 12 + 14 = ~90px clearance, plus safe-area inset.            */
+.app-shell-route {
+  padding-top: 56px;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 1024px) {
+  .app-shell-route {
+    padding-top: 7rem;            /* matches the desktop floating navbar */
+    padding-bottom: 3rem;
+  }
+}
+
+/* No bottom-nav variant — used on flows that already supply their
+   own sticky bottom bar (e.g. CreatePost). */
+.app-shell-route--flush {
+  padding-top: 56px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (min-width: 1024px) {
+  .app-shell-route--flush {
+    padding-top: 7rem;
+    padding-bottom: 0;
+  }
+}
+
+/* Mobile bottom-nav glow ring used for the center create button */
+.mobile-fab-ring {
+  box-shadow:
+    0 0 0 4px #FFFFFF,
+    0 12px 28px -10px rgba(59, 130, 246, 0.45);
+}
+
+/* Soft press feedback for tap targets */
+.touch-press {
+  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.touch-press:active {
+  transform: scale(0.94);
+}

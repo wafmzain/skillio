@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from './services/supabaseClient'
@@ -8,6 +8,8 @@ import { formatViews } from './utils/formatViews'
 import LeaderboardCard from './components/reputation/LeaderboardCard'
 import AffiliateSection from './components/affiliate/AffiliateSection'
 import { AFFILIATE_SOURCES } from './types/affiliate'
+import { useInfiniteFeed } from './hooks/useInfiniteFeed'
+import { FeedSentinel, PostCardSkeletonList } from './components/feed'
 
 /* ---------------------------------------------------------------------------
  * Icons — minimal stroke set (Lucide-ish)
@@ -71,19 +73,31 @@ const SORT_OPTIONS = [
  * Home
  * ------------------------------------------------------------------------- */
 function Home() {
-  const [posts, setPosts] = useState([])
-  const [loading, setLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Semua')
   const [sortBy, setSortBy] = useState('latest')
   const [trendingCreators, setTrendingCreators] = useState([])
   const [userStats, setUserStats] = useState({ followers: 0, following: 0, posts: 0 })
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
 
+  /* Debounce the search box so typing doesn't refetch on every keystroke. */
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 280)
+    return () => clearTimeout(t)
+  }, [searchQuery])
+
+  /* Paginated feed (server-side filtering + infinite scroll). */
+  const feed = useInfiniteFeed({
+    pageSize: 12,
+    category: selectedCategory,
+    sort: sortBy,
+    search: debouncedSearch,
+  })
+
   useEffect(() => {
     getCurrentUser()
-    fetchPosts()
     fetchTrendingCreators()
   }, [])
 
@@ -118,20 +132,11 @@ function Home() {
     })
   }
 
-  async function fetchPosts() {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*, profiles(id, username, name, avatar_url, is_premium)')
-      .order('created_at', { ascending: false })
-    if (error) console.error('Error fetching posts:', error)
-    else setPosts(data || [])
-    setLoading(false)
-  }
-
   async function fetchTrendingCreators() {
     const { data: profiles, error } = await supabase
       .from('profiles')
       .select('id, username, name, avatar_url, is_premium')
+      .order('points', { ascending: false, nullsFirst: false })
       .limit(15)
     if (error) return
 
@@ -151,29 +156,15 @@ function Home() {
     setTrendingCreators(sorted)
   }
 
-  const filteredPosts = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim()
-    let list = posts.filter((post) => {
-      const inTitle = (post.title || '').toLowerCase().includes(q)
-      const inExcerpt = (post.excerpt || '').toLowerCase().includes(q)
-      const inCreator = (post.profiles?.name || '').toLowerCase().includes(q)
-      const matchesSearch = !q || inTitle || inExcerpt || inCreator
-      const matchesCategory =
-        selectedCategory === 'Semua' || post.category === selectedCategory
-      return matchesSearch && matchesCategory
-    })
-
-    if (sortBy === 'trending') {
-      list = [...list].sort(
-        (a, b) => (b.trending_score || 0) - (a.trending_score || 0)
-      )
-    } else {
-      list = [...list].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )
-    }
-    return list
-  }, [posts, searchQuery, selectedCategory, sortBy])
+  /* Stable callbacks so memoized PostCard doesn't churn. */
+  const handlePostDeleted = useCallback(
+    (deletedId) => {
+      // Optimistic local removal — the next fetch round will re-confirm.
+      feed.refresh()
+      void deletedId
+    },
+    [feed]
+  )
 
   const trendingTopics = [
     { name: 'AI Workflow', count: '2.4K' },
@@ -193,8 +184,9 @@ function Home() {
            * MAIN FEED
            * ============================================================== */}
           <main className="lg:col-span-8 min-w-0">
-            {/* Sticky feed header */}
-            <div className="sticky top-[76px] z-20 -mx-4 sm:-mx-6 lg:mx-0 px-4 sm:px-6 lg:px-0 bg-[#FAFAFA]/85 backdrop-blur-md pt-2 pb-4 mb-4 border-b border-[#E5E7EB] lg:border-b-0 lg:rounded-2xl lg:bg-transparent lg:backdrop-blur-none lg:static lg:py-0 lg:mb-6">
+            {/* Sticky feed header — sits below the slim mobile top bar (56px)
+                on phones and below the floating navbar (≈76px) on desktop. */}
+            <div className="sticky top-[56px] lg:top-[76px] z-20 -mx-4 sm:-mx-6 lg:mx-0 px-4 sm:px-6 lg:px-0 bg-[#FAFAFA]/85 backdrop-blur-md pt-2 pb-4 mb-4 border-b border-[#E5E7EB] lg:border-b-0 lg:rounded-2xl lg:bg-transparent lg:backdrop-blur-none lg:static lg:py-0 lg:mb-6">
               {/* Title row */}
               <div className="flex items-center justify-between gap-3 mb-4">
                 <div className="min-w-0">
@@ -202,7 +194,9 @@ function Home() {
                     {selectedCategory === 'Semua' ? 'Untuk kamu' : selectedCategory}
                   </h1>
                   <p className="text-xs text-[#6B7280] mt-0.5">
-                    {filteredPosts.length} insight · diperbarui realtime
+                    {feed.loading
+                      ? 'Memuat insight…'
+                      : `${feed.posts.length}${feed.hasMore ? '+' : ''} insight · diperbarui realtime`}
                   </p>
                 </div>
                 {currentUser && (
@@ -308,29 +302,9 @@ function Home() {
             </div>
 
             {/* Feed body */}
-            {loading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="p-5 bg-white border border-[#E5E7EB] rounded-2xl"
-                  >
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-[#F3F4F6] animate-pulse" />
-                      <div className="space-y-2">
-                        <div className="w-28 h-3 bg-[#F3F4F6] rounded animate-pulse" />
-                        <div className="w-20 h-2.5 bg-[#F3F4F6] rounded animate-pulse" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="w-3/4 h-4 bg-[#F3F4F6] rounded animate-pulse" />
-                      <div className="w-full h-3 bg-[#F3F4F6] rounded animate-pulse" />
-                      <div className="w-5/6 h-3 bg-[#F3F4F6] rounded animate-pulse" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : filteredPosts.length === 0 ? (
+            {feed.loading ? (
+              <PostCardSkeletonList count={4} />
+            ) : feed.posts.length === 0 ? (
               <EmptyState
                 hasSearch={!!searchQuery || selectedCategory !== 'Semua'}
                 currentUser={currentUser}
@@ -340,28 +314,41 @@ function Home() {
                 }}
               />
             ) : (
-              <motion.div
-                initial="hidden"
-                animate="show"
-                variants={{
-                  hidden: {},
-                  show: { transition: { staggerChildren: 0.04 } },
-                }}
-                className="space-y-4"
-              >
-                {filteredPosts.map((post) => (
-                  <motion.div
-                    key={post.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 8 },
-                      show: { opacity: 1, y: 0 },
-                    }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                  >
-                    <PostCard post={post} currentUser={currentUser} showAuthor />
-                  </motion.div>
-                ))}
-              </motion.div>
+              <>
+                <motion.div
+                  initial="hidden"
+                  animate="show"
+                  variants={{
+                    hidden: {},
+                    show: { transition: { staggerChildren: 0.04 } },
+                  }}
+                  className="space-y-4"
+                >
+                  {feed.posts.map((post) => (
+                    <motion.div
+                      key={post.id}
+                      variants={{
+                        hidden: { opacity: 0, y: 8 },
+                        show: { opacity: 1, y: 0 },
+                      }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
+                    >
+                      <PostCard
+                        post={post}
+                        currentUser={currentUser}
+                        showAuthor
+                        onDelete={handlePostDeleted}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+
+                <FeedSentinel
+                  loaderRef={feed.loaderRef}
+                  hasMore={feed.hasMore}
+                  loading={feed.loadingMore}
+                />
+              </>
             )}
           </main>
 
@@ -401,18 +388,8 @@ function Home() {
         </div>
       </div>
 
-      {/* Floating mobile create button */}
-      {currentUser && (
-        <Link
-          to="/upload"
-          className="sm:hidden fixed bottom-5 right-5 z-40"
-          aria-label="Buat Insight"
-        >
-          <button className="w-14 h-14 rounded-full bg-[#3B82F6] hover:bg-[#2563EB] text-white shadow-xl shadow-blue-500/30 flex items-center justify-center transition-all active:scale-95">
-            <Icon name="plus" className="w-6 h-6" />
-          </button>
-        </Link>
-      )}
+      {/* The mobile bottom nav already exposes a center "Buat" button,
+          so we no longer render a floating create FAB on mobile. */}
     </div>
   )
 }
