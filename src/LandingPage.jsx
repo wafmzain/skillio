@@ -236,7 +236,7 @@ function LandingPage({ user }) {
               </span>
 
               <h1 className="text-[clamp(2.25rem,5vw,3.75rem)] font-bold leading-[1.1] tracking-tight text-[#111827] mb-6">
-                Bagikan insight dan skill bersama komunitas modern {' '}
+                Bagikan insight dan skill bersama komunitas dengan {' '}
                 <span className="relative inline-block">
                   <span className="text-[#3B82F6]">dukungan AI.</span>
                   <svg
@@ -404,34 +404,35 @@ function LandingPage({ user }) {
               {[
                 {
                   icon: 'pen',
-                  title: 'Langsung tulis, langsung publish',
-                  desc: 'Gak perlu bikin kursus atau modul. Cukup tulis apa yang kamu tahu, pengalaman kamu, atau hal yang baru kamu pelajari.',
+                  title: 'Tulis dan bagikan insight dengan mudah',
+                  desc: 'Tidak perlu membuat kursus atau modul panjang. Cukup bagikan pengalaman, pengetahuan, atau hal baru yang kamu pelajari.',
                 },
                 {
                   icon: 'network',
-                  title: 'Ketemu orang yang sefrekuensi',
-                  desc: 'Follow orang yang insight-nya kamu suka. Ngobrol di komentar. Koneksi tumbuh dari situ.',
+                  title: 'Terhubung dengan komunitas yang relevan',
+                  desc: 'Ikuti pengguna dengan insight yang menarik, berdiskusi lewat komentar, dan bangun koneksi secara natural.',
                 },
                 {
                   icon: 'trending',
-                  title: 'Tulisan bagus naik sendiri',
-                  desc: 'Gak perlu followers banyak buat dilihat. Insight yang bermanfaat otomatis muncul di feed orang lain.',
+                  title: 'Insight berkualitas lebih mudah ditemukan',
+                  desc: 'Konten yang bermanfaat dapat muncul di feed pengguna lain tanpa harus memiliki banyak followers.',
                 },
                 {
                   icon: 'bookmark',
-                  title: 'Simpan yang penting',
-                  desc: 'Nemu insight bagus? Bookmark. Nanti bisa dibaca ulang kapan aja tanpa harus scroll cari lagi.',
+                  title: 'Simpan insight penting',
+                  desc: 'Bookmark insight favorit agar dapat dibaca kembali kapan saja dengan lebih praktis.',
                 },
                 {
                   icon: 'message',
-                  title: 'Komentar yang beneran diskusi',
-                  desc: 'Bukan tempat spam atau debat kusir. Di sini orang beneran nanya, jawab, dan saling bantu.',
+                  title: 'Diskusi yang lebih bermakna',
+                  desc: 'Bangun percakapan yang fokus, saling membantu, dan mendukung proses belajar komunitas.',
                 },
                 {
                   icon: 'zap',
-                  title: 'Gak ada drama engagement',
-                  desc: 'Semua transparan. Yang penting isi tulisannya, bukan siapa yang paling rame.',
+                  title: 'Fokus pada kualitas insight',
+                  desc: 'Platform dirancang untuk menghargai kualitas konten dan kontribusi, bukan sekadar popularitas.',
                 },
+
               ].map((f) => (
                 <div
                   key={f.title}
@@ -455,7 +456,7 @@ function LandingPage({ user }) {
           <div className="max-w-[1200px] mx-auto">
             <div className="text-center max-w-[680px] mx-auto mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-[#111827] tracking-tight leading-tight mb-4">
-                Orang yang udah nemuin rumahnya di Skillio
+                Pengalaman pengguna di Skillio
               </h2>
               <p className="text-base text-[#6B7280]">
                 Suara dari komunitas tentang cara mereka tumbuh dengan berbagi.
